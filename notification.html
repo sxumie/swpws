@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Notifications | SwapWise</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <div class="logo" onclick="goHome()">SwapWise</div>
+    <div class="nav-links">
+      <button onclick="goHome()">🏠 Home</button>
+    </div>
+  </div>
+</header>
+
+<section class="dashboard-section">
+  <div class="dash-header">
+    <h2>Swap Requests 📩</h2>
+  </div>
+
+  <div id="notifContainer" class="matches"></div>
+</section>
+
+<script src="script.js"></script>
+<script>
+  renderInbox();
+</script>
+
+</body>
+</html>
