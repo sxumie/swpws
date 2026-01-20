@@ -36,7 +36,7 @@
     </section>
   </main>
 
-  <section id="dashboard" class="hidden">
+  <section id="dashboard">
     <div class="dashboard-section">
       <div class="dash-header">
         <h2>Hello, <span id="userNameDisplay" style="background: var(--gradient-purple); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></span>!</h2>
@@ -158,20 +158,17 @@
   <script src="script.js"></script>
 
   <script>
-    window.addEventListener('load', function() {
-        const userData = localStorage.getItem('swapwiseUser');
-        
-        if (!userData) {
-            window.location.assign('index.html');
-        } else {
-            const user = JSON.parse(userData);
-            
-            // Check if loadDashboard is ready
-            if (typeof loadDashboard === "function") {
-                loadDashboard(user);
-            }
+    window.addEventListener('load', () => {
+    const user = JSON.parse(localStorage.getItem('swapwiseUser'));
+    if (!user) return window.location.href = 'index.html';
+
+    // Wait 100ms to ensure script.js has defined the functions
+    setTimeout(() => {
+        if (typeof loadDashboard === 'function') {
+            loadDashboard(user);
         }
-    });
+    }, 100);
+});
 </script>
 </body>
 </html>

@@ -42,9 +42,12 @@ window.onload = () => {
 
 // 3. NAVIGATION LOGIC
 function hideAll() {
-    Object.values(pages).forEach(p => { 
-        if (p) p.classList.add('hidden'); 
-    });
+  Object.values(pages).forEach(p => { 
+      // Adding the 'if (p)' check ensures it won't crash if an element is missing
+      if (p && p.classList) { 
+          p.classList.add('hidden'); 
+      }
+  });
 }
 
 function showLanding() {
@@ -186,40 +189,89 @@ async function renderMatches() {
 
 // 6. PROFILE LOGIC
 function openProfile() {
-    hideAll();
-    if (pages.profile) pages.profile.classList.remove('hidden');
-    
-    const user = currentUser || {};
-    const viewName = document.getElementById('viewName');
-    if (viewName) viewName.innerText = user.full_name || '—';
-    
-    document.getElementById('viewBio').innerText = user.bio || 'No bio yet';
-    document.getElementById('viewSkill').innerText = user.teaching_skill || '—';
-    document.getElementById('userAvatar').src = user.avatar_url || DEFAULT_AVATAR;
+  hideAll();
+  if (pages.profile) pages.profile.classList.remove('hidden');
+  
+  const user = currentUser || {};
+  
+  // Update text content for the view mode
+  document.getElementById('viewName').innerText = user.full_name || '—';
+  document.getElementById('viewBio').innerText = user.bio || 'No bio yet';
+  document.getElementById('viewSkill').innerText = user.teaching_skill || '—';
+  document.getElementById('viewAge').innerText = user.age || '—';
+  document.getElementById('viewBirthday').innerText = user.birthday || '—';
+  document.getElementById('viewSchool').innerText = user.school || '—';
+  
+  // Update avatar
+  document.getElementById('userAvatar').src = user.avatar_url || DEFAULT_AVATAR;
 
-    document.getElementById('profileView').classList.remove('hidden');
-    document.getElementById('profileEdit').classList.add('hidden');
+  document.getElementById('profileView').classList.remove('hidden');
+  document.getElementById('profileEdit').classList.add('hidden');
+}
+
+let selectedAvatarFile = null;
+
+async function updateAvatar(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    selectedAvatarFile = file; // Store the file to upload later
+
+    // Show a preview to the user immediately
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        document.getElementById('editAvatarPreview').src = e.target.result;
+    };
+    reader.readAsDataURL(file);
 }
 
 async function saveProfile() {
-    const updated = {
-        full_name: document.getElementById('editName').value,
-        bio: document.getElementById('editBio').value,
-        teaching_skill: document.getElementById('editSkill').value,
-    };
+  let finalAvatarUrl = currentUser.avatar_url;
 
-    const { error } = await _supabase
-        .from('profiles')
-        .update(updated)
-        .eq('id', currentUser.id);
+  // 1. If a new photo was picked, upload it first
+  if (selectedAvatarFile) {
+      const fileExt = selectedAvatarFile.name.split('.').pop();
+      const fileName = `${currentUser.id}-${Date.now()}.${fileExt}`;
 
-    if (error) alert(error.message);
-    else {
-        alert('Profile Updated!');
-        currentUser = { ...currentUser, ...updated };
-        localStorage.setItem('swapwiseUser', JSON.stringify(currentUser));
-        openProfile();
-    }
+      const { data, error: uploadError } = await _supabase.storage
+          .from('avatars')
+          .upload(fileName, selectedAvatarFile);
+
+      if (uploadError) return alert("Photo upload failed: " + uploadError.message);
+
+      const { data: { publicUrl } } = _supabase.storage
+          .from('avatars')
+          .getPublicUrl(fileName);
+      
+      finalAvatarUrl = publicUrl;
+  }
+
+  // 2. Prepare the full data object (Matches your new database columns)
+  const updatedData = {
+      full_name: document.getElementById('editName').value,
+      bio: document.getElementById('editBio').value,
+      teaching_skill: document.getElementById('editSkill').value,
+      age: document.getElementById('editAge').value ? parseInt(document.getElementById('editAge').value) : null,
+      birthday: document.getElementById('editBirthday').value || null,
+      school: document.getElementById('editSchool').value || '',
+      avatar_url: finalAvatarUrl
+  };
+
+  // 3. Update the 'profiles' table
+  const { error } = await _supabase
+      .from('profiles')
+      .update(updatedData)
+      .eq('id', currentUser.id);
+
+  if (error) {
+      alert("Save failed: " + error.message);
+  } else {
+      alert('Profile and Photo Saved!');
+      currentUser = { ...currentUser, ...updatedData };
+      localStorage.setItem('swapwiseUser', JSON.stringify(currentUser));
+      selectedAvatarFile = null; // Clear the temporary file
+      openProfile();
+  }
 }
 
 // 7. UTILITIES & MISSING FUNCTIONS
@@ -261,3 +313,43 @@ function toggleProfileMenu() {
 
 function goToInbox() { window.location.href = "notification.html"; }
 function goHome() { window.location.href = "landing.html"; }
+
+async function updateAvatar(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // 1. Show a local preview immediately
+  const reader = new FileReader();
+  reader.onload = (e) => {
+      document.getElementById('editAvatarPreview').src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+
+  // 2. Prepare for upload
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${currentUser.id}-${Math.random()}.${fileExt}`;
+  const filePath = `${fileName}`;
+
+  // 3. Upload to Supabase Storage
+  const { data, error: uploadError } = await _supabase.storage
+      .from('avatars')
+      .upload(filePath, file);
+
+  if (uploadError) {
+      return alert("Upload failed: " + uploadError.message);
+  }
+
+  // 4. Get the Public URL
+  const { data: { publicUrl } } = _supabase.storage
+      .from('avatars')
+      .getPublicUrl(filePath);
+
+  // 5. Store the URL in our temporary state
+  // This will be saved to the database when the user clicks "Save Changes"
+  currentUser.avatar_url = publicUrl;
+}
+
+function resetAvatarToDefault() {
+  currentUser.avatar_url = DEFAULT_AVATAR;
+  document.getElementById('editAvatarPreview').src = DEFAULT_AVATAR;
+}
