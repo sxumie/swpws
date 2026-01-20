@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>SwapWise - Home</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -14,9 +14,6 @@
       <div class="nav-links">
         <button onclick="goToInbox()">🔔</button>
         <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
-        <div id="guestLinks">
-          <button onclick="showAuth('login')">Log In</button>
-        </div>
         <div id="userLinks" class="hidden profile-menu">
           <button class="profile-button" onclick="toggleProfileMenu()">
             <img id="headerAvatarImg" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><g fill='%23fff'><circle cx='32' cy='20' r='10'/><path d='M8 54c0-10 10-18 24-18s24 8 24 18z'/></g></svg>" alt="User">
@@ -33,70 +30,39 @@
   <main id="landing">
     <section class="hero">
       <div class="hero-content">
-        <h1>Unlock Your Potential.<br><span class="gradient-text">Trade Skills. Not Cash.</span></h1>
-        <p>Learn faster by exchanging knowledge with people who need your skills.</p>
-        <button class="cta-button" onclick="handleFindBuddy()">
-          Find Your Study Buddy →
-        </button>
-      </div>
-    </section>
-
-    <section class="steps">
-      <div class="step">
-        <div class="step-number">1</div>
-        <h3>Create Your Profile</h3>
-        <p>List the skills you can offer and what you want to learn.</p>
-      </div>
-      <div class="step">
-        <div class="step-number">2</div>
-        <h3>Get Matched</h3>
-        <p>Our system connects you with the right learning partners.</p>
-      </div>
-      <div class="step">
-        <div class="step-number">3</div>
-        <h3>Start Swapping</h3>
-        <p>Teach, learn, and grow together.</p>
+        <h1>Welcome Back,<br><span id="welcomeName" class="gradient-text">Student</span></h1>
+        <p>Ready to trade some more skills today?</p>
       </div>
     </section>
   </main>
-
-  <section id="auth" class="hidden">
-    <div class="auth-wrapper">
-      <div id="loginCard" class="auth-card">
-        <h2>Welcome Back</h2>
-        <input type="email" id="loginEmail" placeholder="Email Address" />
-        <input type="password" id="loginPass" placeholder="Password" />
-        <button onclick="handleLogin()">Log In</button>
-        <p onclick="showAuth('register')">New here? Create an account</p>
-      </div>
-      
-      <div id="registerCard" class="auth-card hidden">
-        <h2>Create Account</h2>
-        <input type="text" id="regName" placeholder="Full Name" />
-        <input type="email" id="regEmail" placeholder="Email Address" />
-        <select id="regSkill">
-          <option value="">Skill you can teach</option>
-          <option>Coding</option>
-          <option>Math</option>
-          <option>Languages</option>
-          <option>Design</option>
-        </select>
-        <input type="password" id="regPass" placeholder="Password" />
-        <button onclick="handleRegister()">Sign Up</button>
-        <p onclick="showAuth('login')">Already have an account?</p>
-      </div>
-    </div>
-  </section>
 
   <section id="dashboard" class="hidden">
     <div class="dashboard-section">
       <div class="dash-header">
         <h2>Hello, <span id="userNameDisplay" style="background: var(--gradient-purple); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></span>!</h2>
-        <input class="search" placeholder="Search skills or users..." onkeyup="search(this.value)" />
+        <input class="search" placeholder="Search skills..." onkeyup="search(this.value)" />
       </div>
-
       <h3 style="margin-bottom: 1.5rem; font-size: 1.5rem; font-weight: 700;">Recommended Matches</h3>
       <div class="matches" id="matchesContainer"></div>
+    </div>
+  </section>
+
+  <section id="profile" class="hidden">
+    <div class="profile-container">
+      <div id="profileView" class="profile-card">
+        <div class="profile-header">
+          <img id="userAvatar" src="" alt="Avatar" />
+          <h2 id="viewName"></h2>
+          <p id="viewBio"></p>
+        </div>
+        <div class="profile-info">
+          <div class="info-item">🎯 <span id="viewSkill"></span></div>
+        </div>
+        <div class="profile-actions">
+          <button onclick="showEditProfile()">✏️ Edit</button>
+          <button onclick="showDashboard()">← Back</button>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -206,23 +172,28 @@
   </section>
 </section>
 
-
   <footer>© 2026 SwapWise. Trade skills, build futures.</footer>
 
-
   <script src="script.js"></script>
+
   <script>
-    // 1. Check if a user is logged in
-    const userData = localStorage.getItem('swapwiseUser');
-    
-    if (!userData) {
-        // If no user found, kick them back to the login page
-        window.location.assign('index.html');
-    } else {
-        const user = JSON.parse(userData);
-        console.log("Welcome to the landing page, " + user.full_name);
-        // You can now use 'user.full_name' to display their name on this page!
-    }
+    window.addEventListener('load', function() {
+        const userData = localStorage.getItem('swapwiseUser');
+        
+        if (!userData) {
+            window.location.assign('index.html');
+        } else {
+            const user = JSON.parse(userData);
+            
+            // Critical: Set the global currentUser so script.js functions work
+            currentUser = user; 
+            
+            // Check if loadDashboard is ready
+            if (typeof loadDashboard === "function") {
+                loadDashboard(user);
+            }
+        }
+    });
 </script>
 </body>
 </html>

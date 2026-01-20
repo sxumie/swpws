@@ -10,10 +10,10 @@ let currentUser = null;
 
 // UI Element Mapping
 const pages = {
-    landing: document.getElementById('landing'),
-    auth: document.getElementById('auth'),
-    dashboard: document.getElementById('dashboard'),
-    profile: document.getElementById('profile')
+  landing: document.getElementById('landing'),
+  auth: document.getElementById('auth'),
+  dashboard: document.getElementById('dashboard'),
+  profile: document.getElementById('profile')
 };
 
 // 2. WINDOW LOAD & THEME
@@ -36,7 +36,11 @@ window.onload = () => {
 
 // 3. NAVIGATION LOGIC
 function hideAll() {
-    Object.values(pages).forEach(p => { if(p) p.classList.add('hidden'); });
+  Object.values(pages).forEach(p => { 
+      if (p && p.classList) { // Added safety check
+          p.classList.add('hidden'); 
+      }
+  });
 }
 
 function showLanding() {
@@ -64,6 +68,12 @@ function handleFindBuddy() {
     } else {
         showAuth('register');
     }
+}
+
+function openProfileFromMenu() {
+  const menu = document.getElementById('profileMenu');
+  if (menu) menu.classList.add('hidden');
+  openProfile();
 }
 
 // 4. AUTHENTICATION (SUPABASE)
@@ -106,7 +116,7 @@ async function handleLogin() {
 
   if (error) return alert(error.message);
 
-  // Fetch the profile
+  // Fetch the profile from your 'profiles' table
   const { data: profile } = await _supabase
       .from('profiles')
       .select('*')
@@ -114,34 +124,41 @@ async function handleLogin() {
       .single();
 
   if (profile) {
-      // Save user to localStorage so landing.html can see it
+      // This is what landing.html looks for!
       localStorage.setItem('swapwiseUser', JSON.stringify(profile));
-      
-      // REDIRECT: Move the user to the new file
       window.location.assign('landing.html'); 
   }
 }
 
-function logout() {
-    if(confirm('Log out of SwapWise?')) {
-        _supabase.auth.signOut();
-        currentUser = null;
-        location.reload();
-    }
+async function logout() {
+  if(confirm('Log out of SwapWise?')) {
+      await _supabase.auth.signOut();
+      localStorage.removeItem('swapwiseUser'); 
+      currentUser = null;
+      window.location.assign('index.html'); 
+  }
 }
 
 // 5. DASHBOARD & MATCHES
 function loadDashboard(user) {
-    hideAll();
-    pages.dashboard.classList.remove('hidden');
-    document.getElementById('userNameDisplay').innerText = user.full_name;
-    document.getElementById('guestLinks').classList.add('hidden');
-    document.getElementById('userLinks').classList.remove('hidden');
-    
-    const headerImg = document.querySelector('.profile-button img');
-    if (headerImg) headerImg.src = user.avatar_url || DEFAULT_AVATAR;
-    
-    renderMatches();
+  hideAll();
+  
+  // Only show dashboard if it exists on the current page
+  if (pages.dashboard) {
+      pages.dashboard.classList.remove('hidden');
+  }
+
+  const nameDisplay = document.getElementById('userNameDisplay');
+  if (nameDisplay) nameDisplay.innerText = user.full_name;
+
+  // Ensure the navigation links for logged-in users are visible
+  const userLinks = document.getElementById('userLinks');
+  if (userLinks) userLinks.classList.remove('hidden');
+
+  const guestLinks = document.getElementById('guestLinks');
+  if (guestLinks) guestLinks.classList.add('hidden');
+
+  renderMatches();
 }
 
 async function renderMatches() {
@@ -232,5 +249,5 @@ function showEditProfile() {
 }
 
 function goHome(){
-  window.location.href="index.html"
+  window.location.href="landing.html"
 }
