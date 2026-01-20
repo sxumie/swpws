@@ -51,25 +51,6 @@
     <div class="profile-container">
       <div id="profileView" class="profile-card">
         <div class="profile-header">
-          <img id="userAvatar" src="" alt="Avatar" />
-          <h2 id="viewName"></h2>
-          <p id="viewBio"></p>
-        </div>
-        <div class="profile-info">
-          <div class="info-item">🎯 <span id="viewSkill"></span></div>
-        </div>
-        <div class="profile-actions">
-          <button onclick="showEditProfile()">✏️ Edit</button>
-          <button onclick="showDashboard()">← Back</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="profile" class="hidden">
-    <div class="profile-container">
-      <div id="profileView" class="profile-card">
-        <div class="profile-header">
           <div class="profile-avatar-wrapper">
             <img id="userAvatar" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><g fill='%23fff'><circle cx='32' cy='20' r='10'/><path d='M8 54c0-10 10-18 24-18s24 8 24 18z'/></g></svg>" alt="Avatar" />
           </div>
@@ -173,7 +154,7 @@
 </section>
 
   <footer>© 2026 SwapWise. Trade skills, build futures.</footer>
-
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="script.js"></script>
 
   <script>
@@ -184,9 +165,6 @@
             window.location.assign('index.html');
         } else {
             const user = JSON.parse(userData);
-            
-            // Critical: Set the global currentUser so script.js functions work
-            currentUser = user; 
             
             // Check if loadDashboard is ready
             if (typeof loadDashboard === "function") {
