@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <header>
@@ -63,15 +64,16 @@
     <div class="auth-wrapper">
       <div id="loginCard" class="auth-card">
         <h2>Welcome Back</h2>
-        <input type="text" id="loginUser" placeholder="Username" />
-        <input type="password" placeholder="Password" />
+        <input type="email" id="loginEmail" placeholder="Email Address" />
+        <input type="password" id="loginPass" placeholder="Password" />
         <button onclick="handleLogin()">Log In</button>
         <p onclick="showAuth('register')">New here? Create an account</p>
       </div>
-
+      
       <div id="registerCard" class="auth-card hidden">
         <h2>Create Account</h2>
         <input type="text" id="regName" placeholder="Full Name" />
+        <input type="email" id="regEmail" placeholder="Email Address" />
         <select id="regSkill">
           <option value="">Skill you can teach</option>
           <option>Coding</option>
@@ -79,7 +81,7 @@
           <option>Languages</option>
           <option>Design</option>
         </select>
-        <input type="password" placeholder="Password" />
+        <input type="password" id="regPass" placeholder="Password" />
         <button onclick="handleRegister()">Sign Up</button>
         <p onclick="showAuth('login')">Already have an account?</p>
       </div>
