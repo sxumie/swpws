@@ -114,19 +114,23 @@ async function handleLogin() {
       password: password,
   });
 
-  if (error) return alert(error.message);
+  if (error) return alert("Login Error: " + error.message);
 
-  // Fetch the profile from your 'profiles' table
-  const { data: profile } = await _supabase
+  // After login, fetch the profile data
+  const { data: profile, error: profileError } = await _supabase
       .from('profiles')
       .select('*')
       .eq('id', data.user.id)
       .single();
 
   if (profile) {
-      // This is what landing.html looks for!
+      // Save to browser memory
       localStorage.setItem('swapwiseUser', JSON.stringify(profile));
-      window.location.assign('landing.html'); 
+      // Go to landing page
+      window.location.assign('landing.html');
+  } else {
+      console.error("Profile not found:", profileError);
+      alert("Login successful, but profile data is missing.");
   }
 }
 
