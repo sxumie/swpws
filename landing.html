@@ -10,13 +10,13 @@
 <body>
   <header>
     <div class="nav">
-      <div class="logo" onclick="showLanding()">SwapWise</div>
+      <div class="logo"><a href="#">SwapWise</a></div>
       <div class="nav-links">
         <button onclick="goToInbox()">🔔</button>
         <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
         <div id="userLinks" class="hidden profile-menu">
           <button class="profile-button" onclick="toggleProfileMenu()">
-            <img id="headerAvatarImg" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><g fill='%23fff'><circle cx='32' cy='20' r='10'/><path d='M8 54c0-10 10-18 24-18s24 8 24 18z'/></g></svg>" alt="User">
+            <img id="headerAvatarImg" src="" alt="User">
           </button> 
           <div id="profileMenu" class="profile-dropdown hidden">
             <button onclick="openProfileFromMenu()">Profile</button>
@@ -29,23 +29,36 @@
 
   <main id="landing">
     <section class="hero">
-      <div class="hero-content">
-        <h1>Welcome Back,<br><span id="welcomeName" class="gradient-text">Student</span></h1>
-        <p>Ready to trade some more skills today?</p>
-      </div>
+        <div class="hero-content">
+            <h1>Welcome to SwapWise!<br><span id="welcomeName" class="gradient-text">Student</span></h1>
+            <p>Ready to trade some more skills today?</p>
+        </div>
     </section>
-  </main>
 
-  <section id="dashboard">
-    <div class="dashboard-section">
-      <div class="dash-header">
-        <h2>Hello, <span id="userNameDisplay" style="background: var(--gradient-purple); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></span>!</h2>
-        <input class="search" placeholder="Search skills..." onkeyup="search(this.value)" />
+    <section id="community-carousel" class="carousel-container">
+      <h2>Meet Our Community</h2>
+      
+      <div class="carousel-viewport">
+          <div id="carouselTrack" class="carousel-track"></div>
       </div>
-      <h3 style="margin-bottom: 1.5rem; font-size: 1.5rem; font-weight: 700;">Recommended Matches</h3>
-      <div class="matches" id="matchesContainer"></div>
-    </div>
+  
+      <div class="carousel-controls">
+          <button class="control-btn" onclick="moveCarousel(-1)" aria-label="Previous">❮</button>
+          <button class="control-btn" onclick="moveCarousel(1)" aria-label="Next">❯</button>
+      </div>
   </section>
+</main>
+
+<section id="dashboard" class="hidden">
+    <div class="dashboard-section">
+        <div class="dash-header">
+            <h2>Hello, <span id="userNameDisplay" style="background: var(--gradient-purple); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></span>!</h2>
+            <input class="search" placeholder="Search skills..." onkeyup="search(this.value)" />
+        </div>
+        <h3 style="margin-bottom: 1.5rem; font-size: 1.5rem; font-weight: 700;">Recommended Matches</h3>
+        <div class="matches" id="matchesContainer"></div>
+    </div>
+</section>
 
   <section id="profile" class="hidden">
     <div class="profile-container">

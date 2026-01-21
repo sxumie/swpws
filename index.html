@@ -10,21 +10,11 @@
 <body>
   <header>
     <div class="nav">
-      <div class="logo" onclick="showLanding()">SwapWise</div>
+      <div class="logo">SwapWise</div>
       <div class="nav-links">
-        <button onclick="goToInbox()">🔔</button>
         <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
         <div id="guestLinks">
           <button onclick="showAuth('login')">Log In</button>
-        </div>
-        <div id="userLinks" class="hidden profile-menu">
-          <button class="profile-button" onclick="toggleProfileMenu()">
-            <img id="headerAvatarImg" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><g fill='%23fff'><circle cx='32' cy='20' r='10'/><path d='M8 54c0-10 10-18 24-18s24 8 24 18z'/></g></svg>" alt="User">
-          </button> 
-          <div id="profileMenu" class="profile-dropdown hidden">
-            <button onclick="openProfileFromMenu()">Profile</button>
-            <button onclick="logout()">Logout</button>
-          </div>
         </div>
       </div>
     </div>
@@ -35,7 +25,7 @@
       <div class="hero-content">
         <h1>Unlock Your Potential.<br><span class="gradient-text">Trade Skills. Not Cash.</span></h1>
         <p>Learn faster by exchanging knowledge with people who need your skills.</p>
-        <button class="cta-button" onclick="handleFindBuddy()">
+        <button class="cta-button" onclick="showAuth('login')">
           Find Your Study Buddy →
         </button>
       </div>
@@ -63,7 +53,8 @@
   <section id="auth" class="hidden">
     <div class="auth-wrapper">
       <div id="loginCard" class="auth-card">
-        <h2>Welcome Back</h2>
+        <button class="close-auth" onclick="showAuth('close')">&times;</button>
+        <h2>Login</h2>
         <input type="email" id="loginEmail" placeholder="Email Address" />
         <input type="password" id="loginPass" placeholder="Password" />
         <button onclick="handleLogin()">Log In</button>
@@ -71,6 +62,7 @@
       </div>
       
       <div id="registerCard" class="auth-card hidden">
+        <button class="close-auth" onclick="showAuth('close')">&times;</button>
         <h2>Create Account</h2>
         <input type="text" id="regName" placeholder="Full Name" />
         <input type="email" id="regEmail" placeholder="Email Address" />
@@ -86,19 +78,7 @@
         <p onclick="showAuth('login')">Already have an account?</p>
       </div>
     </div>
-  </section>
-
-  <section id="dashboard" class="hidden">
-    <div class="dashboard-section">
-      <div class="dash-header">
-        <h2>Hello, <span id="userNameDisplay" style="background: var(--gradient-purple); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></span>!</h2>
-        <input class="search" placeholder="Search skills or users..." onkeyup="search(this.value)" />
-      </div>
-
-      <h3 style="margin-bottom: 1.5rem; font-size: 1.5rem; font-weight: 700;">Recommended Matches</h3>
-      <div class="matches" id="matchesContainer"></div>
-    </div>
-  </section>
+</section>
 
 </section>
 

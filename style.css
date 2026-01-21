@@ -334,77 +334,124 @@
     }
 
     /* Auth Section */
-    .auth-wrapper {
-      max-width: 460px;
+/* --- 1. Background Overlay --- */
+#auth {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.75); /* Darkens background */
+  backdrop-filter: blur(8px);    /* Blurs the content behind */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;                 /* Layers it above all else */
+  transition: opacity 0.3s ease;
+}
+
+/* --- 2. The Pop-up Card --- */
+.auth-wrapper {
+  max-width: 460px;
       margin: 4rem auto;
       padding: 1.5rem;
-    }
+  animation: authPop 0.4s cubic-bezier(0.17, 0.89, 0.32, 1.25);
+}
 
-    .auth-card {
-      background: var(--card-bg);
-      padding: 3rem 2.5rem;
-      border-radius: 1.5rem;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow-xl);
-    }
+@keyframes authPop {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
 
-    .auth-card h2 {
-      font-size: 2rem;
-      font-weight: 700;
-      margin-bottom: 2rem;
-      text-align: center;
-      color: var(--text-dark);
-    }
+.auth-card {
+  background: var(--card-bg);
+  padding: 3rem 2.5rem;
+  border-radius: 1.5rem;
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border);
+  position: relative;
+  text-align: center;
+}
 
-    .auth-card input,
-    .auth-card select {
-      width: 100%;
-      padding: 1rem 1.25rem;
-      margin-bottom: 1rem;
-      border: 2px solid var(--border);
-      border-radius: 0.75rem;
-      background: var(--bg-surface);
-      color: var(--text-dark);
-      font-size: 1rem;
-      transition: all 0.2s ease;
-    }
+/* --- 3. Inputs & Select Styling --- */
+.auth-card h2 {
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  background: var(--gradient-purple);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-align: center;
+  color: var(--text-dark);
+  font-weight: 700;
+}
 
-    .auth-card input:focus,
-    .auth-card select:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
-    }
 
-    .auth-card button {
-      width: 100%;
-      padding: 1rem;
-      background: var(--gradient-purple);
-      color: white;
-      font-weight: 600;
-      font-size: 1rem;
-      border: none;
-      border-radius: 0.75rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
+.auth-card input, 
+.auth-card select {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text-dark);
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
 
-    .auth-card button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(124, 58, 237, 0.3);
-    }
+.auth-card input:focus {
+  border-color: var(--primary);
+  outline: none;
+}
 
-    .auth-card p {
-      text-align: center;
-      margin-top: 1.5rem;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: color 0.2s ease;
-    }
+/* --- 4. Buttons --- */
+.auth-card button {
+  padding: 14px;
+  margin-top: 10px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.3s;
+}
 
-    .auth-card p:hover {
-      color: var(--primary);
-    }
+.auth-card button:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+}
+
+/* Close button style */
+.close-auth {
+  position: absolute;
+
+  top: 5px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.auth-card p {
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.auth-card p:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+/* Ensure hidden works */
+#auth.hidden, .auth-card.hidden {
+  display: none;
+}
 
     /* Dashboard */
     .dashboard-section {
@@ -819,7 +866,169 @@
   margin-top: 10px;
 }
 
+/* Carousel */
 
+.avatar-container, .profile-avatar-wrapper, .edit-avatar-wrapper {
+  width: 200px; /* Adjust size as needed */
+  height: 200px;
+  margin: 0 auto 1.5rem;
+  overflow: hidden;
+  border-radius: 8px; /* Slight rounding for a modern square look */
+  border: 3px solid var(--primary);
+  background: var(--bg-surface);
+}
+
+/* The actual image logic */
+.card-avatar, #userAvatar, #editAvatarPreview {
+  width: 100%;
+  height: 100%;
+  /* This is the magic line: it crops the image to fill the square */
+  object-fit: cover; 
+  display: block;
+  border-radius: 0; /* Ensures it is NOT a circle */
+}
+
+/* --- Square Image Styling --- */
+.avatar-container {
+  width: 150px;
+  height: 150px;
+  margin: 0 auto 15px;
+  border-radius: 8px; /* Square with slight roundness */
+  overflow: hidden;
+  border: 2px solid var(--primary);
+}
+
+
+/* --- Detail Layout --- */
+.carousel-item h3 { margin: 10px 0 5px; color: var(--text-dark); }
+.carousel-item .user-bio { font-style: italic; font-size: 0.9rem; margin-bottom: 10px; height: 3em; overflow: hidden; }
+.carousel-item .user-meta { font-size: 0.85rem; color: var(--text-muted); }
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 480px) {
+  .carousel-item {
+    min-width: 260px; /* Narrower cards for small screens */
+    padding: 15px;
+  }
+  .avatar-container {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+.carousel-viewport {
+  overflow: hidden;
+  width: 100%;
+  padding: 60px 0; /* Extra padding for the scaled-up active card */
+  perspective: 1000px;
+}
+
+.carousel-track {
+  display: flex;
+  align-items: center;
+  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.carousel-item {
+  min-width: 320px; /* Base width for desktop */
+  max-width: 320px;
+  margin: 0 15px;
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 25px;
+  text-align: center;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  
+  /* Initial state (Blurred/Smaller) */
+  transition: all 0.5s ease;
+  filter: blur(5px);
+  opacity: 0.4;
+  transform: scale(0.85);
+  pointer-events: none; /* Disable interaction unless active */
+}
+
+img[src=""], img:not([src]) {
+  visibility: hidden;}
+
+.carousel-item h3 {
+  margin: 10px 0 5px;
+  font-size: 1.25rem;
+  color: var(--text-dark);
+}
+
+/* --- Active Card State (Focused) --- */
+.carousel-item.active {
+  filter: blur(0);
+  opacity: 1;
+  transform: scale(1.05);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--primary);
+  pointer-events: all;
+}
+.carousel-item p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+}
+
+/* --- Carousel Container Layout --- */
+.carousel-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centers the title and controls */
+  padding: 4rem 0;
+  width: 100%;
+}
+
+/* --- Control Styling --- */
+.carousel-controls {
+  display: flex;
+  justify-content: center;
+  gap: 2rem; /* Space between buttons */
+  margin-top: 2rem; /* Pushes controls away from the cards */
+  width: 100%;
+}
+
+.control-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid var(--primary);
+  background: var(--card-bg);
+  color: var(--primary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-md);
+}
+
+.control-btn:hover {
+  background: var(--primary);
+  color: white;
+  transform: scale(1.1);
+  box-shadow: var(--shadow-lg);
+}
+
+.control-btn:active {
+  transform: scale(0.95);
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 480px) {
+  .carousel-controls {
+      gap: 1.5rem;
+      margin-top: 1rem;
+  }
+  
+  .control-btn {
+      width: 45px;
+      height: 45px;
+  }
+}
 
     /* Responsive */
     @media (max-width: 768px) {

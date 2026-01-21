@@ -1,87 +1,65 @@
 // 1. INITIALIZATION 
 const supabaseUrl = 'https://vegwfmtgrfllcfdoyqih.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlZ3dmbXRncmZsbGNmZG95cWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4OTU5MjYsImV4cCI6MjA4NDQ3MTkyNn0.xxU7UPtQAPJQbeyLF0cpUTU1dwUjUB-ohWRQF1D_MLo';
-
-// We use _supabase to avoid conflict with the global 'supabase' library object
 const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
 const DEFAULT_AVATAR = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><g fill="%23fff"><circle cx="32" cy="20" r="10"/><path d="M8 54c0-10 10-18 24-18s24 8 24 18z"/></g></svg>';
 
-// Global user state initialized from storage
 let currentUser = JSON.parse(localStorage.getItem('swapwiseUser')) || null;
 
-// UI Element Mapping - Updated to be safe for multiple pages
 const pages = {
     landing: document.getElementById('landing'),
-    auth: document.getElementById('auth'),
     dashboard: document.getElementById('dashboard'),
     profile: document.getElementById('profile')
 };
 
-// 2. WINDOW LOAD & THEME
+// 2. WINDOW LOAD
 window.onload = () => {
-    document.addEventListener('click', function(e) {
-        const menu = document.getElementById('profileMenu');
-        const btn = document.querySelector('.profile-button');
-        if (!menu || !btn) return;
-        if (!menu.contains(e.target) && !btn.contains(e.target)) {
-            menu.classList.add('hidden');
-        }
-    });
-
     const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-        document.body.classList.add('dark');
-    }
+    if (savedTheme === 'dark') document.body.classList.add('dark');
     
-    // Auto-load UI if user is already logged in
-    if (currentUser && (pages.dashboard || pages.landing)) {
+    // Check if we are logged in
+    if (currentUser) {
         loadDashboard(currentUser);
+        showDashboard(); // Ensure Hero and Dashboard show on load
     }
+    loadCarousel();
 };
 
-// 3. NAVIGATION LOGIC
+// 3. NAVIGATION LOGIC (The Fix)
 function hideAll() {
-  Object.values(pages).forEach(p => { 
-      // Adding the 'if (p)' check ensures it won't crash if an element is missing
-      if (p && p.classList) { 
-          p.classList.add('hidden'); 
-      }
-  });
-}
-
-function showLanding() {
-    if (window.location.pathname.includes('landing.html')) {
-        hideAll();
-        if (pages.landing) pages.landing.classList.remove('hidden');
-    } else {
-        window.location.href = "landing.html";
-    }
-}
-
-function showAuth(type) {
-    hideAll();
-    if (pages.auth) {
-        pages.auth.classList.remove('hidden');
-        document.getElementById('loginCard').classList.toggle('hidden', type !== 'login');
-        document.getElementById('registerCard').classList.toggle('hidden', type !== 'register');
-    } else {
-        window.location.href = "index.html";
-    }
+    Object.values(pages).forEach(p => { 
+        if (p) p.classList.add('hidden'); 
+    });
 }
 
 function showDashboard() {
-    if (!currentUser) return showAuth('login');
     hideAll();
+    // Show BOTH landing (Hero) and dashboard (Matches)
+    if (pages.landing) pages.landing.classList.remove('hidden');
     if (pages.dashboard) pages.dashboard.classList.remove('hidden');
     renderMatches();
+    // Trigger carousel update to fix centering
+    setTimeout(() => updateCarousel(false), 50);
 }
 
-function handleFindBuddy() {
-    if (currentUser) {
-        showDashboard();
-    } else {
-        showAuth('register');
+function showAuth(type) {
+    const authSection = document.getElementById('auth');
+    const loginCard = document.getElementById('loginCard');
+    const registerCard = document.getElementById('registerCard');
+
+    if (type === 'close') {
+        authSection.classList.add('hidden');
+        return;
+    }
+
+    authSection.classList.remove('hidden');
+
+    if (type === 'login') {
+        loginCard.classList.remove('hidden');
+        registerCard.classList.add('hidden');
+    } else if (type === 'register') {
+        registerCard.classList.remove('hidden');
+        loginCard.classList.add('hidden');
     }
 }
 
@@ -121,6 +99,9 @@ async function handleLogin() {
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPass').value;
 
+    if(!email || !password) return alert("Please fill in all fields.");
+
+    // 1. Authenticate with Supabase
     const { data, error } = await _supabase.auth.signInWithPassword({
         email: email,
         password: password,
@@ -128,6 +109,7 @@ async function handleLogin() {
 
     if (error) return alert("Login Error: " + error.message);
 
+    // 2. Fetch the user's profile data
     const { data: profile, error: pError } = await _supabase
         .from('profiles')
         .select('*')
@@ -135,36 +117,31 @@ async function handleLogin() {
         .single();
 
     if (profile) {
+        // 3. Store the user data so landing.html can read it
         localStorage.setItem('swapwiseUser', JSON.stringify(profile));
-        currentUser = profile;
-        window.location.assign('landing.html');
+        
+        // 4. REDIRECT to the other file
+        window.location.href = 'landing.html'; 
     } else {
-        alert("Profile not found in database.");
+        alert("Profile not found. Please ensure your account setup is complete.");
     }
 }
 
 async function logout() {
-    if(confirm('Log out of SwapWise?')) {
+    if(confirm('Log out?')) {
         await _supabase.auth.signOut();
-        localStorage.removeItem('swapwiseUser'); 
-        currentUser = null;
-        window.location.assign('index.html'); 
+        localStorage.removeItem('swapwiseUser');
+        window.location.href = 'index.html';
     }
 }
+window.addEventListener('resize', () => updateCarousel(false));
 
 // 5. DASHBOARD & MATCHES
-function loadDashboard(user) {
-    const nameDisplay = document.getElementById('userNameDisplay');
-    const welcomeName = document.getElementById('welcomeName');
-    if (nameDisplay) nameDisplay.innerText = user.full_name;
-    if (welcomeName) welcomeName.innerText = user.full_name;
-
-    const userLinks = document.getElementById('userLinks');
-    const guestLinks = document.getElementById('guestLinks');
-    if (userLinks) userLinks.classList.remove('hidden');
-    if (guestLinks) guestLinks.classList.add('hidden');
-
-    renderMatches();
+async function loadDashboard(user) {
+    document.getElementById('userNameDisplay').innerText = user.full_name;
+    document.getElementById('welcomeName').innerText = user.full_name;
+    document.getElementById('userLinks').classList.remove('hidden');
+    document.getElementById('headerAvatarImg').src = user.avatar_url || DEFAULT_AVATAR;
 }
 
 async function renderMatches() {
@@ -189,24 +166,20 @@ async function renderMatches() {
 
 // 6. PROFILE LOGIC
 function openProfile() {
-  hideAll();
-  if (pages.profile) pages.profile.classList.remove('hidden');
-  
-  const user = currentUser || {};
-  
-  // Update text content for the view mode
-  document.getElementById('viewName').innerText = user.full_name || '—';
-  document.getElementById('viewBio').innerText = user.bio || 'No bio yet';
-  document.getElementById('viewSkill').innerText = user.teaching_skill || '—';
-  document.getElementById('viewAge').innerText = user.age || '—';
-  document.getElementById('viewBirthday').innerText = user.birthday || '—';
-  document.getElementById('viewSchool').innerText = user.school || '—';
-  
-  // Update avatar
-  document.getElementById('userAvatar').src = user.avatar_url || DEFAULT_AVATAR;
+    hideAll();
+    if (pages.profile) pages.profile.classList.remove('hidden');
+    
+    const user = currentUser || {};
+    document.getElementById('viewName').innerText = user.full_name || 'Anonymous';
+    document.getElementById('viewBio').innerText = user.bio || 'No bio yet';
+    document.getElementById('viewSkill').innerText = user.teaching_skill || '—';
+    document.getElementById('viewAge').innerText = user.age || '—';
+    document.getElementById('viewBirthday').innerText = user.birthday || '—';
+    document.getElementById('viewSchool').innerText = user.school || '—';
+    document.getElementById('userAvatar').src = user.avatar_url || DEFAULT_AVATAR;
 
-  document.getElementById('profileView').classList.remove('hidden');
-  document.getElementById('profileEdit').classList.add('hidden');
+    document.getElementById('profileView').classList.remove('hidden');
+    document.getElementById('profileEdit').classList.add('hidden');
 }
 
 let selectedAvatarFile = null;
@@ -352,4 +325,101 @@ async function updateAvatar(event) {
 function resetAvatarToDefault() {
   currentUser.avatar_url = DEFAULT_AVATAR;
   document.getElementById('editAvatarPreview').src = DEFAULT_AVATAR;
+}
+
+// 5. CAROUSEL LOGIC
+let currentSlide = 0;
+let profilesData = [];
+
+async function loadCarousel() {
+    const track = document.getElementById('carouselTrack');
+    if (!track) return;
+
+    // 1. Fetch ALL necessary fields including bio and age
+    const { data: profiles, error } = await _supabase
+        .from('profiles')
+        .select('full_name, teaching_skill, avatar_url, school, bio, age');
+
+    if (error || !profiles || profiles.length === 0) return;
+    
+    profilesData = profiles;
+    const cloneCount = 3; 
+    const combined = [...profiles.slice(-cloneCount), ...profiles, ...profiles.slice(0, cloneCount)];
+
+    track.innerHTML = combined.map((user, index) => {
+        const userImg = (user.avatar_url && user.avatar_url.trim() !== "") ? user.avatar_url : DEFAULT_AVATAR;
+        
+        return `
+            <div class="carousel-item" data-index="${index}">
+                <div class="avatar-container">
+                    <img src="${userImg}" class="card-avatar" onerror="this.src='${DEFAULT_AVATAR}'"> 
+                </div>
+                <h3>${user.full_name || 'Anonymous'}</h3>
+                <p class="user-bio">"${user.bio || 'Hello! Let\'s swap skills.'}"</p>
+                <p><strong>Teaches:</strong> ${user.teaching_skill || 'Various'}</p>
+                <div class="user-meta">
+                    <span>${user.school || 'SwapWise'}</span> • 
+                    <span>Age: ${user.age || '—'}</span>
+                </div>
+            </div>`;
+    }).join('');
+
+    currentSlide = cloneCount; 
+    updateCarousel(false);
+}
+
+function moveCarousel(direction) {
+    const cloneCount = Math.min(profilesData.length, 3);
+    currentSlide += direction;
+    updateCarousel(true);
+
+    const track = document.getElementById('carouselTrack');
+    track.addEventListener('transitionend', () => {
+        if (currentSlide >= profilesData.length + cloneCount) {
+            currentSlide = cloneCount;
+            updateCarousel(false);
+        }
+        if (currentSlide < cloneCount) {
+            currentSlide = profilesData.length + cloneCount - 1;
+            updateCarousel(false);
+        }
+    }, { once: true });
+}
+
+function updateCarousel(withTransition) {
+    const track = document.getElementById('carouselTrack');
+    const cards = document.querySelectorAll('.carousel-item');
+    if (!cards.length) return;
+
+    // Calculate dynamic spacing for centering
+    const cardStyle = window.getComputedStyle(cards[0]);
+    const marginRight = parseFloat(cardStyle.marginRight);
+    const marginLeft = parseFloat(cardStyle.marginLeft);
+    const cardWidth = cards[0].offsetWidth + marginRight + marginLeft;
+    
+    // Viewport centering logic
+    const offset = (window.innerWidth / 2) - (cardWidth / 2);
+
+    track.style.transition = withTransition ? 'transform 0.6s cubic-bezier(0.23, 1, 0.32, 1)' : 'none';
+    track.style.transform = `translateX(${-currentSlide * cardWidth + offset}px)`;
+
+    // Apply Focus/Blur classes
+    cards.forEach((card, idx) => {
+        card.classList.toggle('active', idx === currentSlide);
+    });
+}
+
+function updateProfileUI(user) {
+    const avatarImg = document.getElementById('userAvatar');
+    const editPreview = document.getElementById('editAvatarPreview');
+    const headerImg = document.getElementById('headerAvatarImg');
+
+    // Logic: Use stored URL, or the DEFAULT_AVATAR if null/empty
+    const finalSrc = (user.avatar_url && user.avatar_url.trim() !== "") 
+                     ? user.avatar_url 
+                     : DEFAULT_AVATAR;
+
+    if (avatarImg) avatarImg.src = finalSrc;
+    if (editPreview) editPreview.src = finalSrc;
+    if (headerImg) headerImg.src = finalSrc;
 }
