@@ -894,3 +894,25 @@
         min-width: 100%;
       }
     }
+
+    #auth.hidden {
+      display: none !important; /* Forces it to disappear and not block clicks */
+      pointer-events: none;      /* Ensures no mouse interaction when hidden */
+  }
+  
+  .noti-btn {
+      cursor: pointer;
+      position: relative;
+      z-index: 1001; /* Keeps the button above other elements */
+  }
+
+  .notification-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 10px;
+    height: 10px;
+    background: red;
+    border-radius: 50%;
+    border: 2px solid white;
+}

@@ -283,8 +283,7 @@ function toggleProfileMenu() {
     document.getElementById('profileMenu')?.classList.toggle('hidden');
 }
 
-function goToInbox() { window.location.href = "notification.html"; }
-function goHome() { window.location.href = "landing.html"; }
+
 
 async function updateAvatar(event) {
   const file = event.target.files[0];
@@ -326,3 +325,76 @@ function resetAvatarToDefault() {
   document.getElementById('editAvatarPreview').src = DEFAULT_AVATAR;
 }
 
+//inbox js
+
+async function loadInbox() {
+    const container = document.getElementById('inboxContainer');
+    if (!container) return;
+
+    // Fetch requests where the current user is the receiver
+    const { data: requests, error } = await _supabase
+        .from('swap_requests')
+        .select(`
+            id,
+            status,
+            sender_id,
+            profiles:sender_id (full_name, teaching_skill, avatar_url)
+        `)
+        .eq('receiver_id', currentUser.id)
+        .eq('status', 'pending');
+
+    if (error) return console.error(error);
+
+    if (requests.length === 0) {
+        container.innerHTML = '<p>Your inbox is empty. Start matching!</p>';
+        return;
+    }
+
+    container.innerHTML = requests.map(req => `
+        <div class="notification-card">
+            <img src="${req.profiles.avatar_url || DEFAULT_AVATAR}" class="nav-avatar">
+            <div class="noti-info">
+                <strong>${req.profiles.full_name}</strong> wants to swap skills!
+                <p>They teach: ${req.profiles.teaching_skill}</p>
+            </div>
+            <div class="noti-actions">
+                <button class="accept-btn" onclick="respondToRequest('${req.id}', 'accepted')">✔</button>
+                <button class="decline-btn" onclick="respondToRequest('${req.id}', 'declined')">✘</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function sendRequest(receiverId) {
+    if (!currentUser) return alert("Please log in to send requests!");
+
+    const { error } = await _supabase
+        .from('swap_requests')
+        .insert([{ 
+            sender_id: currentUser.id, 
+            receiver_id: receiverId,
+            status: 'pending'
+        }]);
+
+    if (error) {
+        if (error.code === '23505') alert("You already sent a request to this person!");
+        else alert("Error: " + error.message);
+    } else {
+        alert("Swap Request Sent! 🚀");
+    }
+}
+
+async function checkNewNotifications() {
+    if (!currentUser) return;
+
+    const { count, error } = await _supabase
+        .from('swap_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('receiver_id', currentUser.id)
+        .eq('status', 'pending');
+
+    const notiBtn = document.querySelector('.noti-btn');
+    if (count > 0 && notiBtn) {
+        notiBtn.innerHTML = '🔔<span class="notification-badge"></span>';
+    }
+}
