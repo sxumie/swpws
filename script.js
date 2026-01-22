@@ -1,27 +1,37 @@
-// 1. INITIALIZATION 
-const supabaseUrl = 'https://vegwfmtgrfllcfdoyqih.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlZ3dmbXRncmZsbGNmZG95cWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4OTU5MjYsImV4cCI6MjA4NDQ3MTkyNn0.xxU7UPtQAPJQbeyLF0cpUTU1dwUjUB-ohWRQF1D_MLo';
-const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-let currentUser = JSON.parse(localStorage.getItem('swapwiseUser')) || null;
-
 const pages = {
     landing: document.getElementById('landing'),
     dashboard: document.getElementById('dashboard'),
     profile: document.getElementById('profile')
 };
 
-// 2. WINDOW LOAD
+// 1. GLOBAL CONFIGURATION
+const DEFAULT_AVATAR = 'images/coco.jpg';
+const supabaseUrl = 'https://vegwfmtgrfllcfdoyqih.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlZ3dmbXRncmZsbGNmZG95cWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4OTU5MjYsImV4cCI6MjA4NDQ3MTkyNn0.xxU7UPtQAPJQbeyLF0cpUTU1dwUjUB-ohWRQF1D_MLo';
+const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+// Define pages early so hideAll() doesn't crash
+
+let currentUser = JSON.parse(localStorage.getItem('swapwiseUser')) || null;
+let currentSlide = 0;
+let profilesData = [];
+
+// 2. WINDOW LOAD LOGIC
 window.onload = () => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') document.body.classList.add('dark');
     
-    // Check if we are logged in
     if (currentUser) {
         loadDashboard(currentUser);
-        showDashboard(); // Ensure Hero and Dashboard show on load
+        showDashboard(); 
     }
-    loadCarousel();
+
+    // Only load if element exists
+    if (document.getElementById('carouselTrack')) loadCarousel();
+    if (document.getElementById('notifContainer')) loadInbox();
+    
+    // Check for notifications on landing page
+    if (document.querySelector('.noti-btn')) checkNewNotifications();
 };
 
 // 3. NAVIGATION LOGIC (The Fix)
@@ -328,10 +338,11 @@ function resetAvatarToDefault() {
 //inbox js
 
 async function loadInbox() {
-    const container = document.getElementById('inboxContainer');
+    const container = document.getElementById('notifContainer');
     if (!container) return;
 
-    // Fetch requests where the current user is the receiver
+    container.innerHTML = '<div class="noti-status">Loading your requests...</div>';
+
     const { data: requests, error } = await _supabase
         .from('swap_requests')
         .select(`
@@ -343,26 +354,33 @@ async function loadInbox() {
         .eq('receiver_id', currentUser.id)
         .eq('status', 'pending');
 
-    if (error) return console.error(error);
+    if (error) return console.error("Inbox Error:", error);
 
-    if (requests.length === 0) {
-        container.innerHTML = '<p>Your inbox is empty. Start matching!</p>';
+    if (!requests || requests.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <p>No new requests yet. Keep sharing your skills!</p>
+            </div>`;
         return;
     }
 
-    container.innerHTML = requests.map(req => `
-        <div class="notification-card">
-            <img src="${req.profiles.avatar_url || DEFAULT_AVATAR}" class="nav-avatar">
-            <div class="noti-info">
-                <strong>${req.profiles.full_name}</strong> wants to swap skills!
-                <p>They teach: ${req.profiles.teaching_skill}</p>
-            </div>
-            <div class="noti-actions">
-                <button class="accept-btn" onclick="respondToRequest('${req.id}', 'accepted')">✔</button>
-                <button class="decline-btn" onclick="respondToRequest('${req.id}', 'declined')">✘</button>
+container.innerHTML = requests.map(req => `
+    <div class="noti-card">
+        <div class="noti-profile">
+            <img src="${req.profiles.avatar_url || DEFAULT_AVATAR}" 
+                 class="noti-img" 
+                 onerror="this.src='${DEFAULT_AVATAR}'">
+            <div class="noti-text">
+                <h4>${req.profiles.full_name}</h4>
+                <p>Wants to learn: <strong>${req.profiles.teaching_skill}</strong></p>
             </div>
         </div>
-    `).join('');
+        <div class="noti-btns">
+            <button class="btn-accept" onclick="respondToRequest('${req.id}', 'accepted')">Accept</button>
+            <button class="btn-decline" onclick="respondToRequest('${req.id}', 'declined')">Decline</button>
+        </div>
+    </div>
+`).join('');
 }
 
 async function sendRequest(receiverId) {
@@ -398,3 +416,22 @@ async function checkNewNotifications() {
         notiBtn.innerHTML = '🔔<span class="notification-badge"></span>';
     }
 }
+
+async function respondToRequest(requestId, newStatus) {
+    const { error } = await _supabase
+        .from('swap_requests')
+        .update({ status: newStatus })
+        .eq('id', requestId);
+
+    if (error) {
+        alert("Action failed: " + error.message);
+    } else {
+        alert(`Request ${newStatus}!`);
+        loadInbox(); // Refresh the list
+    }
+}
+
+function goToInbox() { window.location.href = "notification.html"; }
+  function goHome() { window.location.href = "landing.html"; }
+
+

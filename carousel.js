@@ -1,13 +1,8 @@
-const DEFAULT_AVATAR = 'images/coco.jpg';
-
-let currentSlide = 0;
-let profilesData = [];
 
 async function loadCarousel() {
     const track = document.getElementById('carouselTrack');
     if (!track) return;
 
-    // 1. Fetch ALL necessary fields including bio and age
     const { data: profiles, error } = await _supabase
         .from('profiles')
         .select('full_name, teaching_skill, avatar_url, school, bio, age');
@@ -20,7 +15,6 @@ async function loadCarousel() {
 
     track.innerHTML = combined.map((user, index) => {
         const userImg = (user.avatar_url && user.avatar_url.trim() !== "") ? user.avatar_url : DEFAULT_AVATAR;
-        
         return `
             <div class="carousel-item" data-index="${index}">
                 <div class="avatar-container">
@@ -95,3 +89,12 @@ function updateProfileUI(user) {
     if (editPreview) editPreview.src = finalSrc;
     if (headerImg) headerImg.src = finalSrc;
 }
+
+// Instead of just calling loadCarousel(), wait for the page to be ready
+window.addEventListener('DOMContentLoaded', () => {
+    if (typeof DEFAULT_AVATAR !== 'undefined') {
+        loadCarousel();
+    } else {
+        console.error("Carousel Error: DEFAULT_AVATAR is missing. Check script order.");
+    }
+});

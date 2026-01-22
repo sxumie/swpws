@@ -18,20 +18,29 @@
   </div>
 </header>
 
-<section class="dashboard-section">
-  <div class="dash-header">
-    <h2>Swap Requests 📩</h2>
+<section class="notification-container">
+  <div class="noti-header">
+      <h2>Inbox 📩</h2>
+      <p>Manage your incoming skill-sharing invites</p>
   </div>
-
-  <div id="notifContainer" class="matches"></div>
+  <div id="notifContainer" class="noti-list"></div> 
 </section>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="script.js"></script>
+<script src="carousel.js"></script>
 <script>
-  renderInbox();
-  function goToInbox() { window.location.href = "notification.html"; }
-  function goHome() { window.location.href = "landing.html"; }
-
+  
+  window.onload = () => {
+      // Check if user is logged in
+      if (!currentUser) {
+          window.location.href = 'index.html';
+          return;
+      }
+      // Call the function from script.js
+      if (typeof loadInbox === 'function') {
+          loadInbox();
+      }
+  };
 </script>
 
 </body>

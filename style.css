@@ -900,19 +900,109 @@
       pointer-events: none;      /* Ensures no mouse interaction when hidden */
   }
   
-  .noti-btn {
-      cursor: pointer;
-      position: relative;
-      z-index: 1001; /* Keeps the button above other elements */
-  }
+/* --- UNIFIED NOTIFICATION SYSTEM --- */
 
-  .notification-badge {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    width: 10px;
-    height: 10px;
-    background: red;
-    border-radius: 50%;
-    border: 2px solid white;
+/* 1. The Container */
+.notification-container {
+  max-width: 700px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+}
+
+.noti-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+/* 2. The Card Logic */
+.noti-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.noti-card {
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.noti-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* 3. Profile Section - FIXES THE GIANT IMAGE */
+.noti-profile {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.noti-img {
+  width: 60px; /* Fixed width */
+  height: 60px; /* Fixed height */
+  border-radius: 50%;
+  object-fit: cover; /* Ensures image doesn't stretch */
+  border: 2px solid var(--primary);
+  flex-shrink: 0; /* Prevents image from squishing */
+}
+
+.noti-text h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-dark);
+}
+
+.noti-text p {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* 4. Action Buttons */
+.noti-btns {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-accept, .btn-decline {
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.btn-accept {
+  background: #10b981;
+  color: white;
+  border: none;
+}
+
+.btn-decline {
+  background: #fee2e2; /* Light red */
+  color: #ef4444;
+  border: none;
+}
+
+.btn-accept:hover { background: #059669; }
+.btn-decline:hover { background: #fecaca; }
+
+/* 5. Dark Mode Support */
+body.dark .noti-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+body.dark .btn-decline {
+  background: rgba(239, 68, 68, 0.1);
 }
