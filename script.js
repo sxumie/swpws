@@ -24,6 +24,8 @@ window.onload = () => {
     if (currentUser) {
         loadDashboard(currentUser);
         showDashboard(); 
+        // ADD THIS LINE to check for requests on every load
+        checkNewNotifications(); 
     }
 
     // Only load if element exists
@@ -345,21 +347,20 @@ async function loadInbox() {
 
     const { data: requests, error } = await _supabase
         .from('swap_requests')
-        .select(`
-            id,
-            status,
-            sender_id,
-            profiles:sender_id (full_name, teaching_skill, avatar_url)
-        `)
+        .select(`id, status, sender_id, profiles:sender_id (full_name, teaching_skill, avatar_url)`)
         .eq('receiver_id', currentUser.id)
         .eq('status', 'pending');
 
     if (error) return console.error("Inbox Error:", error);
 
+    // --- EMPTY STATE LOGIC ---
     if (!requests || requests.length === 0) {
         container.innerHTML = `
-            <div class="empty-state">
-                <p>No new requests yet. Keep sharing your skills!</p>
+            <div class="empty-inbox">
+                <div class="empty-icon">📩</div>
+                <h3>Your inbox is empty</h3>
+                <p>No new swap requests at the moment. Try updating your profile or searching for new matches!</p>
+                <button class="btn-primary" onclick="goHome()">Find Partners</button>
             </div>`;
         return;
     }

@@ -1006,3 +1006,42 @@ body.dark .noti-card {
 body.dark .btn-decline {
   background: rgba(239, 68, 68, 0.1);
 }
+
+.noti-btn {
+  position: relative; /* Essential for the badge to align to the button */
+}
+
+.notification-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  background-color: #ef4444; /* Bright red */
+  border: 2px solid white;
+  border-radius: 50%;
+}
+
+.empty-inbox {
+  text-align: center;
+  padding: 3rem 1rem;
+  background: var(--card-bg);
+  border-radius: 16px;
+  border: 2px dashed var(--border);
+  margin-top: 2rem;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.empty-inbox h3 {
+  margin-bottom: 0.5rem;
+  color: var(--text-dark);
+}
+
+.empty-inbox p {
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+}
