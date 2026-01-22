@@ -12,6 +12,7 @@
   <div class="nav">
     <div class="logo" onclick="goHome()">SwapWise</div>
     <div class="nav-links">
+      <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
       <button onclick="goHome()">🏠 Home</button>
     </div>
   </div>
@@ -28,6 +29,8 @@
 <script src="script.js"></script>
 <script>
   renderInbox();
+  function goToInbox() { window.location.href = "notification.html"; }
+  function goHome() { window.location.href = "landing.html"; }
 </script>
 
 </body>
