@@ -4,7 +4,7 @@ const pages = {
     profile: document.getElementById('profile')
 };
 
-// 1. GLOBAL CONFIGURATION
+// 1. GLOBAL CONFIGURATION/ MGA Important Key
 const DEFAULT_AVATAR = 'images/coco.jpg';
 const supabaseUrl = 'https://vegwfmtgrfllcfdoyqih.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlZ3dmbXRncmZsbGNmZG95cWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4OTU5MjYsImV4cCI6MjA4NDQ3MTkyNn0.xxU7UPtQAPJQbeyLF0cpUTU1dwUjUB-ohWRQF1D_MLo';

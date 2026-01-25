@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SwapWise</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="courage.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -23,7 +24,7 @@
   <main id="landing">
     <section class="hero">
       <div class="hero-content">
-        <h1>Unlock Your Potential.<br><span class="gradient-text">Trade Skills. Not Cash.</span></h1>
+        <h1>Unlock Your Potential<br><span class="gradient-text">Trade Skills</span></h1>
         <p>Learn faster by exchanging knowledge with people who need your skills.</p>
         <button class="cta-button" onclick="showAuth('login')">
           Find Your Study Buddy →
@@ -48,6 +49,52 @@
         <p>Teach, learn, and grow together.</p>
       </div>
     </section>
+
+    <!-- Courage Section -->
+    <section class="student-hero-section">
+  
+      <div class="student-hero-content">
+        <h1 class="student-hero-title">Unlock Your Potential</h1>
+        
+        <div class="student-hero-list">
+          <div class="student-hero-card">
+            <p>"Learning is the only thing the mind never exhausts..."</p>
+            <cite>- Leonardo da Vinci</cite>
+            <div class="student-hero-actions">
+              <button class="student-hero-btn" onclick="showAuth('login')">Login</button>
+            </div>
+          </div>
+    
+          <div class="student-hero-card">
+            <p>"An investment in knowledge pays the best interest."</p>
+            <cite>- Benjamin Franklin</cite>
+            <div class="student-hero-actions">
+              <button class="student-hero-btn" onclick="showAuth('register')">Register Now!</button>
+            </div>
+          </div>
+    
+          <div class="student-hero-card">
+            <p>"Education is the most powerful weapon..."</p>
+            <cite>- Nelson Mandela</cite>
+            <div class="student-hero-actions">
+              <button class="student-hero-btn">Know More</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+      
+
+      <div class="my-photo-side">
+        <div class="my-image-grid">
+          <img src="images/student.jpg" class="my-floating-img img-1" alt="Student">
+          <img src="images/denmark.jpg" class="my-floating-img img-2" alt="Learning">
+          <img src="images/coco.jpg" class="my-floating-img img-3" alt="Books">
+        </div>
+      </div>
+    
+    </section>
+
   </main>
 
   <section id="auth" class="hidden">

@@ -1,0 +1,155 @@
+/* Layout Wrapper */
+.student-hero-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 60px 5%;
+    gap: 40px;
+    background: var(--gradient-hero); /* Connects to your dark/light mode */
+  }
+  
+  /* Left Column */
+  .student-hero-content {
+    flex: 1;
+  }
+  
+  .student-hero-title {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+    color: var(--text-dark);
+  }
+  
+  /* List of Cards */
+  .student-hero-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  /* Individual Card Styling */
+  .student-hero-card {
+    background: var(--card-bg); /* Matches your theme */
+    padding: 25px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column; /* Stacks text then button */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  }
+  
+  .student-hero-card p {
+    font-size: 1.1rem;
+    font-style: italic;
+    margin-bottom: 5px;
+    color: var(--text-dark);
+  }
+  
+  .student-hero-card cite {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+  
+  /* Button Container - This makes them uniform */
+  .student-hero-actions {
+    width: 100%; /* Forces the container to fill the card */
+  }
+  
+  .student-hero-btn {
+    width: 100%; /* ALL BUTTONS SAME SIZE */
+    padding: 12px 0;
+    border-radius: 8px;
+    border: none;
+    background: var(--primary); /* Uses your purple/blue */
+    color: white;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+  
+  .student-hero-btn:hover {
+    opacity: 0.9;
+  }
+  
+  /* Right Column (The Visual) */
+  .student-hero-media {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .student-hero-glow {
+    width: 100%;
+    max-width: 500px;
+    height: 400px;
+    background: linear-gradient(135deg, var(--primary), #a855f7);
+    border-radius: 24px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .student-hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 15px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  }
+  
+  /* Responsive Fix */
+  @media (max-width: 950px) {
+    .student-hero-section {
+      flex-direction: column;
+      text-align: center;
+    }
+  }
+
+  /* Right side styling (The Photo Side) */
+.my-photo-side {
+    top: 20px;
+    flex: 1;
+    position: relative;
+    height: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* background: linear-gradient(45deg, var(--primary), #a855f7) url(images/books.jpg); */
+    background: url(images/books.jpg);
+    border-radius: 30px;
+    overflow: hidden;
+  }
+  
+  .my-floating-img {
+    width: 220px;
+    height: 270px;
+    object-fit: cover;
+    border-radius: 10px;
+    position: absolute;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.446);
+    transform: rotate(-10deg);
+  }
+  
+  /* Styling the floating effect like Xbox */
+  .img-1 { top: 10%; left: 10%; z-index: 3; }
+  .img-2 { top: 30%; right: 10%; z-index: 1; transform: rotate(5deg); }
+  .img-3 { bottom: 10%; left: 30%; z-index: 2; transform: rotate(-5deg); }
+  
+  /* Small buttons */
+  .my-login-btn { background: #eee; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
+  .my-reg-btn { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
+  .my-more-btn { background: none; border: 1px solid var(--primary); color: var(--primary); padding: 8px 15px; border-radius: 5px; cursor: pointer; }
+  
+  /* Mobile View: Stack them vertically */
+  @media (max-width: 900px) {
+    .my-big-wrapper {
+      flex-direction: column;
+      padding: 20px;
+    }
+    .my-photo-side {
+      width: 100%;
+      height: 300px;
+    }
+  }
