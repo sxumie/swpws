@@ -144,13 +144,15 @@
       background: black;
     }
 
-    .profile-menu {
-      position: relative;
-    }
+    /* This ensures the dropdown stays attached to the button */
+.profile-menu, .profile-area {
+  position: relative; 
+  display: inline-block;
+}
 
     .profile-dropdown {
       position: absolute;
-      right: 0;
+      right: -40px;
       top: calc(100% + 0.5rem);
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -1044,4 +1046,136 @@ body.dark .btn-decline {
 .empty-inbox p {
   color: var(--text-muted);
   margin-bottom: 1.5rem;
+}
+
+/* Nav */
+
+/* Header Container */
+.main-header {
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+}
+
+/* Logo Styling */
+.brand-logo {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--primary);
+  text-decoration: none;
+  letter-spacing: -1px;
+}
+
+/* Navigation Group */
+.nav-links-group {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Icon Buttons (Modern Circle Style) */
+.nav-icon-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.2s ease;
+  color: var(--text-dark);
+}
+
+.nav-icon-btn:hover {
+  background: rgba(99, 102, 241, 0.1); /* Subtle purple tint */
+  transform: translateY(-2px);
+}
+
+/* Profile Avatar */
+.user-avatar-trigger {
+  background: none;
+  border: 2px solid var(--primary);
+  padding: 2px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  overflow: hidden;
+}
+
+.user-avatar-trigger img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Dropdown Menu */
+.user-dropdown-box, .profile-dropdown {
+  position: absolute;
+  top: calc(100% + 10px); /* Places it exactly below the avatar */
+  right: 0;               /* Aligns the right edge with the avatar */
+  left: auto;             /* Prevents it from stretching to the left */
+  z-index: 1001;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 160px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.user-dropdown-box button {
+  width: 100%;
+  padding: 12px 15px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-dark);
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.user-dropdown-box button:hover {
+  background: rgba(99, 102, 241, 0.1); /* Subtle purple hover */
+}
+
+.menu-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0 10px;
+}
+
+/* Red logout text like in your picture */
+.logout-text {
+  color: #ff4d4d !important;
+  border-top: 1px solid var(--border) !important;
+}
+
+/* Dark Mode Specific Adjustments */
+body.dark .main-header {
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+body.dark .nav-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
 }

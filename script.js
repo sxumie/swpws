@@ -45,11 +45,12 @@ function hideAll() {
 
 function showDashboard() {
     hideAll();
-    // Show BOTH landing (Hero) and dashboard (Matches)
     if (pages.landing) pages.landing.classList.remove('hidden');
     if (pages.dashboard) pages.dashboard.classList.remove('hidden');
-    renderMatches();
-    // Trigger carousel update to fix centering
+    
+    renderMatches();    // Shows strangers to swap with
+    loadActiveSwaps();  // Shows people you are already swapping with
+    
     setTimeout(() => updateCarousel(false), 50);
 }
 
@@ -292,8 +293,18 @@ function toggleTheme() {
 }
 
 function toggleProfileMenu() {
-    document.getElementById('profileMenu')?.classList.toggle('hidden');
+    const menu = document.getElementById('profileMenu');
+    menu.classList.toggle('hidden');
 }
+
+// Close the menu if the user clicks anywhere else on the screen
+window.addEventListener('click', function(e) {
+    const menu = document.getElementById('profileMenu');
+    const trigger = document.querySelector('.user-avatar-trigger');
+    if (!trigger.contains(e.target) && !menu.contains(e.target)) {
+        menu.classList.add('hidden');
+    }
+});
 
 
 
@@ -426,9 +437,15 @@ async function respondToRequest(requestId, newStatus) {
 
     if (error) {
         alert("Action failed: " + error.message);
+        return;
+    }
+
+    if (newStatus === 'accepted') {
+        // We use 'activeSwapId' to match the Load function in your process page
+        localStorage.setItem('activeSwapId', requestId); 
+        window.location.href = 'swappingprocess.html';
     } else {
-        alert(`Request ${newStatus}!`);
-        loadInbox(); // Refresh the list
+        loadInbox(); // Refresh the list for declined requests
     }
 }
 
@@ -436,3 +453,79 @@ function goToInbox() { window.location.href = "notification.html"; }
   function goHome() { window.location.href = "landing.html"; }
 
 
+// After someone accepted
+
+  async function respondToRequest(requestId, newStatus) {
+    const { error } = await _supabase
+        .from('swap_requests')
+        .update({ status: newStatus })
+        .eq('id', requestId);
+
+    if (error) return console.error("Update Error:", error);
+
+    if (newStatus === 'accepted') {
+        // Save the ID so swappingprocess.html knows which data to load
+        localStorage.setItem('currentSwapId', requestId); 
+        window.location.href = 'swappingprocess.html';
+    } else {
+        loadInbox();
+    }
+}
+
+// For Swappingprocess
+
+async function loadActiveSwaps() {
+    const container = document.getElementById('activeSwapsContainer');
+    const section = document.getElementById('activeSwapsSection');
+    if (!container || !currentUser) return;
+
+    // Fetch swaps where status is accepted and you are involved
+    const { data: swaps, error } = await _supabase
+        .from('swap_requests')
+        .select(`
+            id,
+            status,
+            sender_id,
+            receiver_id,
+            sender_profile:sender_id (full_name, teaching_skill, avatar_url),
+            receiver_profile:receiver_id (full_name, teaching_skill, avatar_url)
+        `)
+        .eq('status', 'accepted')
+        .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`);
+
+    if (error) return console.error("Error loading active swaps:", error);
+
+    // If no swaps exist, keep the section hidden (The "Show None" logic)
+    if (!swaps || swaps.length === 0) {
+        section.classList.add('hidden');
+        return;
+    }
+
+    section.classList.remove('hidden');
+    container.innerHTML = '';
+
+    swaps.forEach(swap => {
+        // Determine who the other person is
+        const partner = swap.sender_id === currentUser.id ? swap.receiver_profile : swap.sender_profile;
+
+        container.innerHTML += `
+            <div class="match active-swap-card">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <img src="${partner.avatar_url || DEFAULT_AVATAR}" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--primary);">
+                    <div>
+                        <h4>${partner.full_name}</h4>
+                        <small>Partnering for: ${partner.teaching_skill}</small>
+                    </div>
+                </div>
+                <button onclick="goToSwap('${swap.id}')" style="margin-top: 15px; background: var(--gradient-cyan);">
+                    Continue Discussion
+                </button>
+            </div>`;
+    });
+}
+
+// Helper to redirect
+function goToSwap(swapId) {
+    localStorage.setItem('activeSwapId', swapId);
+    window.location.href = 'swappingprocess.html';
+}

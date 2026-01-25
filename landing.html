@@ -9,19 +9,36 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  <header>
-    <div class="nav">
-      <div class="logo"><a href="#">SwapWise</a></div>
-      <div class="nav-links">
-        <button class="noti-btn" onclick="goToInbox()">🔔</button>
-        <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
-        <div id="userLinks" class="hidden profile-menu">
-          <button class="profile-button" onclick="toggleProfileMenu()">
-            <img id="headerAvatarImg" src="" alt="User">
-          </button> 
-          <div id="profileMenu" class="profile-dropdown hidden">
+  
+  <header class="main-header">
+    <div class="nav-container">
+      <div class="logo-area">
+        <a href="#" class="brand-logo">SwapWise</a>
+      </div>
+  
+      <div class="nav-links-group">
+        <button class="nav-icon-btn" onclick="window.location.href='swappingprocess.html'" title="Active Swaps">
+          🤝
+        </button>
+  
+        <button class="nav-icon-btn noti-btn" onclick="goToInbox()" title="Notifications">
+          🔔
+          <span id="nav-red-dot" class="notification-badge hidden"></span>
+        </button>
+  
+        <button class="nav-icon-btn theme-toggle" onclick="toggleTheme()" title="Change Mode">
+          🌓
+        </button>
+  
+        <div id="userLinks" class="hidden profile-area">
+          <button class="user-avatar-trigger" onclick="toggleProfileMenu()">
+            <img id="headerAvatarImg" src="images/coco.jpg" alt="User">
+          </button>
+          
+          <div id="profileMenu" class="user-dropdown-box hidden">
             <button onclick="openProfileFromMenu()">Profile</button>
-            <button onclick="logout()">Logout</button>
+            <div class="menu-divider"></div>
+            <button onclick="logout()" class="logout-text">Logout</button>
           </div>
         </div>
       </div>
@@ -34,6 +51,14 @@
             <h1>Welcome to SwapWise!<br><span id="welcomeName" class="gradient-text">Student</span></h1>
             <p>Ready to trade some more skills today?</p>
         </div>
+    </section>
+
+    <section id="activeSwapsSection" class="dashboard-section hidden">
+      <div class="dash-header">
+          <h2>Active Swaps 🤝</h2>
+      </div>
+      <div id="activeSwapsContainer" class="matches">
+          </div>
     </section>
 
     <section id="community-carousel" class="carousel-container">
@@ -49,6 +74,10 @@
       </div>
   </section>
 </main>
+
+
+
+
 
 <section id="dashboard" class="hidden">
     <div class="dashboard-section">
