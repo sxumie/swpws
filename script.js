@@ -170,7 +170,7 @@ async function renderMatches() {
         container.innerHTML += `
             <div class="match">
                 <h4>${user.full_name}</h4>
-                <small>Teaches: ${user.teaching_skill || 'Various Skills'}</small>
+                <small>Teaching: ${user.teaching_skill || 'Various Skills'}</small>
                 <button onclick="sendRequest('${user.id}')">Request Swap</button>
             </div>`;
     });
@@ -514,7 +514,7 @@ async function loadActiveSwaps() {
                     <img src="${partner.avatar_url || DEFAULT_AVATAR}" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--primary);">
                     <div>
                         <h4>${partner.full_name}</h4>
-                        <small>Partnering for: ${partner.teaching_skill}</small>
+                        <small>Teaching: ${partner.teaching_skill}</small>
                     </div>
                 </div>
                 <button onclick="goToSwap('${swap.id}')" style="margin-top: 15px; background: var(--gradient-cyan);">

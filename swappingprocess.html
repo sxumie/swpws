@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
     <title>Swap</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -10,10 +11,10 @@
     <div class="process-wrapper">
         <header class="process-header">
             <button onclick="window.location.href='landing.html'" class="back-btn">
-                <span>←</span> Dashboard
+                <span>←</span> Back
             </button>
             <div class="header-title-group">
-                <h1>🤝 Swap Discussion</h1>
+                <h1>Swap Discussion</h1>
                 <div id="status-badge" class="status-tag">Status: In Progress</div>
             </div>
         </header>
@@ -25,7 +26,7 @@
                         <img src="images/coco.jpg" id="your-img" class="partner-img" alt="You">
                         <div class="user-badge">You</div>
                     </div>
-                    <h3 id="your-role">Teacher</h3>
+                    <h3 id="your-role">Me</h3>
                     <p id="your-skill" class="skill-text">Loading...</p>
                 </div>
                 
@@ -40,16 +41,14 @@
                         <img src="images/coco.jpg" class="partner-img" id="them-img" alt="Partner">
                         <div class="user-badge partner">Partner</div>
                     </div>
-                    <h3 id="them-name">Learner</h3>
+                    <h3 id="them-name">User</h3>
                     <p id="them-skill" class="skill-text">Loading...</p>
                 </div>
             </section>
 
             <section class="process-details">
                 <div class="details-box">
-                    <button class="btn-outline" onclick="cancelSwap()" style="width: 100%; margin-top: 10px; border-color: #ef4444; color: #ef4444;">
-                        <span>❌</span> Cancel / End Swap
-                    </button>
+                    
                     <div class="details-header">
                         <h3>Collaboration Hub</h3>
                         <p>Coordinate your sessions and share learning resources.</p>
@@ -65,11 +64,19 @@
 
                     <div class="notes-area">
                         <label for="swap-notes">Meeting Notes & Schedule</label>
-                        <textarea id="swap-notes" placeholder="Example: Let's meet on Zoom every Tuesday at 5 PM..."></textarea>
+                        <textarea id="swap-notes" placeholder="Swap details like contacts or social. Respect each other."></textarea>
                     </div>
 
                     <button class="save-process-btn">
-                        <span>💾</span> Save Discussion Details
+                        Save Discussion Details
+                    </button>
+                    
+                    <button class="finish-deal-btn" onclick="finishSwap()" style="width: 100%; margin-top: 10px; background-color: #6366f1; color: white; border: none; padding: 16px; border-radius: 16px; font-weight: 700; cursor: pointer;">
+                       Finish Swap & Seal Deal
+                    </button>
+                    
+                    <button class="btn-outline" onclick="cancelSwap()" style="width: 100%; margin-top: 10px; border-color: #ef4444; color: #ef4444; background: none; border: 1px solid; padding: 10px; border-radius: 16px; cursor: pointer;">
+                        Cancel / Delete Swap
                     </button>
                 </div>
             </section>
@@ -264,8 +271,8 @@
     width: 100%;
     margin-top: 25px;
     padding: 16px;
-    background: var(--primary);
-    color: white;
+    background-color: #5fe5b8;
+    color: rgb(59, 19, 120);
     border: none;
     border-radius: 16px;
     font-size: 1rem;
@@ -282,6 +289,27 @@
     filter: brightness(1.1);
     transform: translateY(-2px);
     box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+    background-color: #40b08b;
+}
+
+.finish-deal-btn {
+    width: 100%;
+    margin-top: 10px;
+    background-color: #10b981; /* Nice emerald green */
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 16px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.finish-deal-btn:hover {
+    background-color: #059669;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
 }
 
 /* Mobile Fix */
@@ -294,7 +322,6 @@
 <!----------------------------------------------------------------------------------------------------------- -->
 
 <script>
-    // Initialize Supabase only if not already done
     const supabaseUrl = 'https://vegwfmtgrfllcfdoyqih.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlZ3dmbXRncmZsbGNmZG95cWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4OTU5MjYsImV4cCI6MjA4NDQ3MTkyNn0.xxU7UPtQAPJQbeyLF0cpUTU1dwUjUB-ohWRQF1D_MLo';
     const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
@@ -309,17 +336,14 @@
         }
         await loadSwapDetails();
         
-        // Connect the save button manually to be safe
         const saveBtn = document.querySelector('.save-process-btn');
         if(saveBtn) saveBtn.onclick = saveNotes;
     };
 
     async function loadSwapDetails() {
-        // We check both names you used in different files
         const swapId = localStorage.getItem('activeSwapId') || localStorage.getItem('currentSwapId');
         
         if (!swapId) {
-            alert("No session found. Returning to dashboard.");
             window.location.href = 'landing.html';
             return;
         }
@@ -327,7 +351,7 @@
         const { data, error } = await _supabase
             .from('swap_requests')
             .select(`
-                id, notes, sender_id, receiver_id,
+                id, notes, sender_id, receiver_id, status,
                 sender_profile:sender_id (full_name, teaching_skill, avatar_url, email),
                 receiver_profile:receiver_id (full_name, teaching_skill, avatar_url, email)
             `)
@@ -336,23 +360,49 @@
 
         if (error || !data) return console.error("Load Error:", error);
 
+        // Update UI Textarea
         document.getElementById('swap-notes').value = data.notes || '';
+        document.getElementById('status-badge').innerText = `Status: ${data.status}`;
 
+        // Determine who is who
         const isReceiver = data.receiver_id === currentUser.id;
         const partner = isReceiver ? data.sender_profile : data.receiver_profile;
         const you = isReceiver ? data.receiver_profile : data.sender_profile;
 
+        // FIX: Display the actual email from the database
+        document.getElementById('partner-email').innerText = partner.email || "No email provided";
+
+        // Update Partner Info
         document.getElementById('them-name').innerText = partner.full_name;
-        document.getElementById('them-skill').innerText = "Wants to learn: " + partner.teaching_skill;
-        document.getElementById('partner-email').innerText = partner.email || "Email hidden";
+        document.getElementById('them-skill').innerText = "Teaching: " + partner.teaching_skill;
         document.getElementById('them-img').src = partner.avatar_url || DEFAULT_AVATAR;
+
+        // Update Your Info
         document.getElementById('your-skill').innerText = "Teaching: " + you.teaching_skill;
         document.getElementById('your-img').src = you.avatar_url || DEFAULT_AVATAR;
-        
     }
 
-    
+    async function finishSwap() {
+        const swapId = localStorage.getItem('activeSwapId') || localStorage.getItem('currentSwapId');
         
+        if (confirm("Congratulations! Ready to mark this swap as completed?")) {
+            const { error } = await _supabase
+                .from('swap_requests')
+                .update({ 
+                    status: 'completed',
+                    completed_at: new Date().toISOString() 
+                })
+                .eq('id', swapId);
+
+            if (error) {
+                alert("Error finishing deal: " + error.message);
+            } else {
+                alert("Deal Sealed! 🤝 Your swap is now archived.");
+                localStorage.removeItem('activeSwapId');
+                window.location.href = 'landing.html';
+            }
+        }
+    }
 
     async function saveNotes() {
         const swapId = localStorage.getItem('activeSwapId') || localStorage.getItem('currentSwapId');
@@ -369,19 +419,11 @@
 
     async function cancelSwap() {
         const swapId = localStorage.getItem('activeSwapId') || localStorage.getItem('currentSwapId');
-        
         if (confirm("Permanently delete this swap?")) {
-            const { error } = await _supabase
-                .from('swap_requests')
-                .delete()
-                .eq('id', swapId);
-
-            if (error) {
-                alert("Error: " + error.message);
-            } else {
+            const { error } = await _supabase.from('swap_requests').delete().eq('id', swapId);
+            if (error) alert("Error: " + error.message);
+            else {
                 localStorage.removeItem('activeSwapId');
-                localStorage.removeItem('currentSwapId');
-                alert("Swap deleted successfully.");
                 window.location.href = 'landing.html';
             }
         }
