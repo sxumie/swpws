@@ -1179,3 +1179,138 @@ body.dark .main-header {
 body.dark .nav-icon-btn:hover {
   background: rgba(255, 255, 255, 0.1);
 }
+
+/* Notification Hover */
+
+.noti-wrapper {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 10px; /* Bridge the gap so hover doesn't break */
+}
+
+.noti-hover-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%; /* Sits right at the bottom of the wrapper */
+  right: 0;
+  width: 300px;
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border, #ddd);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  z-index: 1000;
+  padding: 0; /* Changed to 0 for better internal scrolling */
+  margin-top: -5px; /* Pulls it up slightly to overlap the padding bridge */
+}
+
+/* The Secret Sauce: Show when wrapper is hovered */
+.noti-wrapper:hover .noti-hover-dropdown {
+  display: block;
+}
+
+.noti-hover-header {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted, #888);
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--border, #eee);
+}
+
+.noti-hover-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-bottom: 1px solid var(--border, #f9f9f9);
+  font-size: 0.85rem;
+  transition: background 0.2s;
+}
+
+.noti-hover-item:hover {
+  background: var(--bg-body, #f0f0f0);
+}
+
+.noti-hover-item img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.noti-view-all {
+  width: 100%;
+  padding: 10px;
+  background: none;
+  border: none;
+  color: var(--primary, #6366f1);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.noti-hover-list {
+  max-height: 300px; /* Limits height */
+  overflow-y: auto;  /* Adds scrollbar when needed */
+  padding: 5px;
+}
+
+/* Custom Scrollbar Styling */
+.noti-hover-list::-webkit-scrollbar { width: 6px; }
+.noti-hover-list::-webkit-scrollbar-thumb { 
+    background: #ccc; 
+    border-radius: 10px; 
+}
+
+/* Timestamp Styling */
+
+.noti-text {
+  flex: 1;
+}
+
+.noti-text h4 {
+  font-size: 1rem;
+  color: var(--primary-color);
+}
+
+.noti-timestamp, .noti-time {
+  display: inline-block;
+  white-space: nowrap;
+  background: rgba(0, 0, 0, 0.03);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: sans-serif;
+}
+
+/* Dark mode adjustment if you have it */
+body.dark .noti-timestamp {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ccc;
+}
+
+.noti-timestamp, .noti-time {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted, #777);
+  background: rgba(0, 0, 0, 0.04);
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+/* For your Hover List item layout */
+.noti-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* For small screens, allow the timestamp to wrap if needed */
+@media (max-width: 480px) {
+  .noti-top-row {
+      flex-direction: column;
+      align-items: flex-start !important;
+  }
+  .noti-timestamp {
+      margin-top: 4px;
+  }
+}

@@ -507,6 +507,27 @@
 }
 .is-online small { color: #10b981; font-weight: bold; }
 
+/* Time Stamp */
+
+/* Style for message timestamps */
+.msg-time {
+    display: block;
+    font-size: 0.65rem;
+    margin-top: 4px;
+    opacity: 0.7;
+    text-align: right;
+}
+
+.msg.received .msg-time {
+    text-align: left;
+}
+
+/* Specific styling for the Online Status text */
+#partner-status small {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
 /* Mobile Fix */
 @media (max-width: 900px) {
     .process-main-grid { grid-template-columns: 1fr; }
@@ -695,7 +716,14 @@ function appendMessage(msg) {
     const isSent = msg.sender_id === currentUser.id;
     const div = document.createElement('div');
     div.className = `msg ${isSent ? 'sent' : 'received'}`;
-    div.innerText = msg.content;
+    
+    // Create content and time elements
+    const timeStr = formatTime(msg.created_at || new Date().toISOString());
+    div.innerHTML = `
+        <div class="msg-content">${msg.content}</div>
+        <span class="msg-time">${timeStr}</span>
+    `;
+    
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
 }
@@ -748,18 +776,39 @@ function trackPresence() {
         .on('presence', { event: 'sync' }, () => {
             const partnerId = document.getElementById('them-name').dataset.userId;
             const state = channel.presenceState();
-            const isOnline = Object.values(state).flat().some(user => user.user_id === partnerId);
+            
+            // Find partner in the presence state
+            const partnerData = Object.values(state).flat().find(user => user.user_id === partnerId);
+            const isOnline = !!partnerData;
             
             const statusDiv = document.getElementById('partner-status');
-            if (statusDiv) {
-                statusDiv.className = isOnline ? 'online-indicator is-online' : 'online-indicator';
-                statusDiv.querySelector('small').innerText = isOnline ? 'Online Now' : 'Offline';
+            const statusText = statusDiv.querySelector('small');
+            
+            if (isOnline) {
+                statusDiv.classList.add('is-online');
+                statusText.innerText = 'Online Now';
+            } else {
+                statusDiv.classList.remove('is-online');
+                // Optional: You can store a "last_seen" in your profiles table 
+                // but for now, we'll show Offline.
+                statusText.innerText = 'Offline';
             }
         })
         .subscribe(async (status) => {
             if (status === 'SUBSCRIBED') {
-                await channel.track({ user_id: currentUser.id });
+                await channel.track({ 
+                    user_id: currentUser.id,
+                    online_at: new Date().toISOString() 
+                });
             }
         });
+}
+
+// Time
+
+function formatTime(isoString) {
+    if (!isoString) return '';
+    const date = new Date(isoString);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 </script>

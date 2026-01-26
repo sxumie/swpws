@@ -356,44 +356,55 @@ async function loadInbox() {
 
     container.innerHTML = '<div class="noti-status">Loading your requests...</div>';
 
+    // 1. Added 'created_at' to the select query
     const { data: requests, error } = await _supabase
         .from('swap_requests')
-        .select(`id, status, sender_id, profiles:sender_id (full_name, teaching_skill, avatar_url)`)
+        .select(`
+            id, 
+            status, 
+            created_at,
+            sender_id, 
+            profiles:sender_id (full_name, teaching_skill, avatar_url)
+        `)
         .eq('receiver_id', currentUser.id)
-        .eq('status', 'pending');
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false }); // Newest on top
 
     if (error) return console.error("Inbox Error:", error);
 
-    // --- EMPTY STATE LOGIC ---
     if (!requests || requests.length === 0) {
         container.innerHTML = `
             <div class="empty-inbox">
                 <div class="empty-icon">📩</div>
                 <h3>Your inbox is empty</h3>
-                <p>No new swap requests at the moment. Try updating your profile or searching for new matches!</p>
+                <p>No new swap requests at the moment.</p>
                 <button class="btn-primary" onclick="goHome()">Find Partners</button>
             </div>`;
         return;
     }
 
-container.innerHTML = requests.map(req => `
-    <div class="noti-card">
-        <div class="noti-profile">
-            <img src="${req.profiles.avatar_url || DEFAULT_AVATAR}" 
-                 class="noti-img" 
-                 onerror="this.src='${DEFAULT_AVATAR}'">
-            <div class="noti-text">
-                <h4>${req.profiles.full_name}</h4>
-                <p>Wants to learn: <strong>${req.profiles.teaching_skill}</strong></p>
+    container.innerHTML = requests.map(req => {
+        const timeDisplay = getFormattedTime(req.created_at);
+    
+        return `
+            <div class="noti-card">
+                <div class="noti-profile">
+                    <img src="${req.profiles.avatar_url || DEFAULT_AVATAR}" class="noti-img">
+                    <div class="noti-text">
+                        <div class="noti-top-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                            <h4 style="margin:0;">${req.profiles.full_name}</h4>
+                            <span class="noti-timestamp" style="font-size: 0.7rem; color: #888;">${timeDisplay}</span>
+                        </div>
+                        <p>Wants to learn: <strong>${req.profiles.teaching_skill}</strong></p>
+                    </div>
+                </div>
+                <div class="noti-btns">
+                    <button class="btn-accept" onclick="respondToRequest('${req.id}', 'accepted')">Accept</button>
+                    <button class="btn-decline" onclick="respondToRequest('${req.id}', 'declined')">Decline</button>
+                </div>
             </div>
-        </div>
-        <div class="noti-btns">
-            <button class="btn-accept" onclick="respondToRequest('${req.id}', 'accepted')">Accept</button>
-            <button class="btn-decline" onclick="respondToRequest('${req.id}', 'declined')">Decline</button>
-        </div>
-    </div>
-`).join('');
-}
+        `;
+    }).join('');}
 
 async function sendRequest(receiverId) {
     if (!currentUser) return alert("Please log in to send requests!");
@@ -528,4 +539,71 @@ async function loadActiveSwaps() {
 function goToSwap(swapId) {
     localStorage.setItem('activeSwapId', swapId);
     window.location.href = 'swappingprocess.html';
+}
+
+// Notification drop down logic
+
+// Add this to your script.js
+async function updateNotificationHover() {
+    if (!currentUser) return;
+    const listContainer = document.getElementById('notiHoverList');
+    if (!listContainer) return;
+
+    // Fetch pending requests with the created_at timestamp
+    const { data: requests, error } = await _supabase
+        .from('swap_requests')
+        .select(`
+            created_at,
+            sender_profile:sender_id (full_name, avatar_url)
+        `)
+        .eq('receiver_id', currentUser.id)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false }); // Newest first
+
+    if (error || !requests || requests.length === 0) {
+        listContainer.innerHTML = '<p style="padding:20px; text-align:center; font-size:0.8rem; color:gray;">Your inbox is clear! ✨</p>';
+        return;
+    }
+
+    listContainer.innerHTML = requests.map(req => `
+        <div class="noti-hover-item" style="display: flex; gap: 10px; padding: 10px; border-bottom: 1px solid #eee;">
+            <img src="${req.sender_profile.avatar_url || DEFAULT_AVATAR}" style="width: 35px; height: 35px; border-radius: 50%;">
+            <div class="noti-content">
+                <span style="font-size: 0.85rem; display: block;"><strong>${req.sender_profile.full_name}</strong> sent a request.</span>
+                <span class="noti-time" style="font-size: 0.7rem; color: #999;">🕒 ${getFormattedTime(req.created_at)}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Ensure this runs when the page loads
+const originalCheckNotifications = checkNewNotifications;
+checkNewNotifications = async function() {
+    await originalCheckNotifications(); // Runs your original badge logic
+    updateNotificationHover(); // Runs the new hover logic
+};
+
+// Time calculation
+
+function getFormattedTime(dateString) {
+    const now = new Date();
+    const past = new Date(dateString);
+    const diffInSeconds = Math.floor((now - past) / 1000);
+    
+    // Format the exact time
+    const exactTime = past.toLocaleString([], { 
+        month: 'short', 
+        day: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    });
+
+    let relative = '';
+    if (diffInSeconds < 60) relative = 'Just now';
+    else if (diffInSeconds < 3600) relative = `${Math.floor(diffInSeconds / 60)}m ago`;
+    else if (diffInSeconds < 86400) relative = `${Math.floor(diffInSeconds / 3600)}h ago`;
+    else relative = `${Math.floor(diffInSeconds / 86400)}d ago`;
+
+    // Returns: "5m ago • Jan 26, 2:10 PM"
+    return `${relative} • ${exactTime}`;
 }

@@ -13,7 +13,7 @@
   <header class="main-header">
     <div class="nav-container">
       <div class="logo-area">
-        <a href="#" class="brand-logo">SwapWise</a>
+        <a href="#landing" class="brand-logo">SwapWise</a>
       </div>
   
       <div class="nav-links-group">
@@ -21,10 +21,20 @@
           🤝
         </button>
   
-        <button class="nav-icon-btn noti-btn" onclick="goToInbox()" title="Notifications">
-          🔔
-          <span id="nav-red-dot" class="notification-badge hidden"></span>
-        </button>
+        <div class="noti-wrapper">
+          <button class="nav-icon-btn noti-btn" onclick="goToInbox()" title="Notifications">
+              🔔
+              <span id="nav-red-dot" class="notification-badge hidden"></span>
+          </button>
+          
+          <div id="notiHoverBox" class="noti-hover-dropdown">
+              <div class="noti-hover-header">Recent Activity</div>
+              <div id="notiHoverList" class="noti-hover-list">
+                  <p class="noti-empty-text">No new notifications</p>
+              </div>
+              <button class="noti-view-all" onclick="goToInbox()">View All Inbox</button>
+          </div>
+      </div>
   
         <button class="nav-icon-btn theme-toggle" onclick="toggleTheme()" title="Change Mode">
           🌓
@@ -210,6 +220,7 @@
     setTimeout(() => {
         if (typeof loadDashboard === 'function') {
             loadDashboard(user);
+            checkNewNotifications();
         }
     }, 100);
 });
