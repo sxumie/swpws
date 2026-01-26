@@ -31,6 +31,7 @@
                     <div class="avatar-wrapper">
                         <img src="images/coco.jpg" id="your-img" class="partner-img" alt="You">
                         <div class="user-badge">You</div>
+                        <div id="your-finish-indicator" class="finish-indicator hidden">Ready to Finish ✅</div>
                     </div>
                     <h3 id="your-role">Me</h3>
                     <p id="your-skill" class="skill-text">Loading...</p>
@@ -46,6 +47,7 @@
                     <div class="avatar-wrapper">
                         <img src="images/coco.jpg" class="partner-img" id="them-img" alt="Partner">
                         <div class="user-badge partner">Partner</div>
+                        <div id="them-finish-indicator" class="finish-indicator hidden">Ready to Finish ✅</div>
                     </div>
                     <h3 id="them-name">User</h3>
                     <div id="partner-status" class="online-indicator">
@@ -608,6 +610,8 @@
     if(saveBtn) saveBtn.onclick = saveNotes;
     };
 
+    let currentSwapData = null; // Global to store swap details
+
 async function loadSwapDetails() {
     const swapId = localStorage.getItem('activeSwapId') || localStorage.getItem('currentSwapId');
     if (!swapId) return;
@@ -615,14 +619,18 @@ async function loadSwapDetails() {
     const { data, error } = await _supabase
         .from('swap_requests')
         .select(`
-            id, notes, sender_id, receiver_id, status,
-            sender_profile:sender_id (id, full_name, teaching_skill, avatar_url, email),
-            receiver_profile:receiver_id (id, full_name, teaching_skill, avatar_url, email)
+            *,
+            sender_profile:sender_id (*),
+            receiver_profile:receiver_id (*)
         `)
         .eq('id', swapId)
         .single();
 
-    if (error || !data) return console.error("Load Error:", error);
+    if (error) return;
+    currentSwapData = data;
+
+    // Update Indicators
+    updateFinishUI(data);
 
     // FIX: Check if element exists before setting value to prevent crash
     const notesEl = document.getElementById('swap-notes');
@@ -922,5 +930,83 @@ async function submitRating() {
     if (!error) {
         window.location.href = 'home.html';
     }
+}
+
+function updateFinishUI(swap) {
+    const isSender = swap.sender_id === currentUser.id;
+    
+    // Check your status
+    const yourFinish = isSender ? swap.sender_finished : swap.receiver_finished;
+    document.getElementById('your-finish-indicator').classList.toggle('hidden', !yourFinish);
+
+    // Check partner status
+    const partnerFinish = isSender ? swap.receiver_finished : swap.sender_finished;
+    document.getElementById('them-finish-indicator').classList.toggle('hidden', !partnerFinish);
+
+    // Update main button text
+    const btn = document.querySelector('.finish-deal-btn');
+    if (yourFinish) {
+        btn.innerText = "Waiting for Partner...";
+        btn.style.backgroundColor = "#94a3b8";
+        btn.disabled = true;
+    }
+}
+
+async function finishSwap() {
+    const swapId = currentSwapData.id;
+    const isSender = currentSwapData.sender_id === currentUser.id;
+    
+    // Update local DB to show this user is finished
+    const updateData = isSender ? { sender_finished: true } : { receiver_finished: true };
+
+    const { data, error } = await _supabase
+        .from('swap_requests')
+        .update(updateData)
+        .eq('id', swapId)
+        .select()
+        .single();
+
+    if (error) return alert(error.message);
+
+    // If both are now finished, the Realtime listener (below) will trigger the Rating Modal
+    if (data.sender_finished && data.receiver_finished) {
+        completeTheSwap(swapId);
+    } else {
+        updateFinishUI(data);
+    }
+}
+
+async function completeTheSwap(swapId) {
+    await _supabase.from('swap_requests').update({ status: 'completed' }).eq('id', swapId);
+    
+    // Show rating modal
+    const modal = document.getElementById('ratingModal');
+    modal.classList.remove('hidden');
+    
+    // Prepare data for the submitRating function
+    activeSwapId = swapId;
+    partnerId = currentSwapData.sender_id === currentUser.id ? currentSwapData.receiver_id : currentSwapData.sender_id;
+}
+
+function subscribeToSwapUpdates() {
+    const swapId = localStorage.getItem('activeSwapId') || localStorage.getItem('currentSwapId');
+    
+    _supabase
+        .channel('swap_completion')
+        .on('postgres_changes', { 
+            event: 'UPDATE', 
+            schema: 'public', 
+            table: 'swap_requests',
+            filter: `id=eq.${swapId}` 
+        }, payload => {
+            const updatedSwap = payload.new;
+            updateFinishUI(updatedSwap);
+            
+            // If the status just changed to completed, show modal to the other person
+            if (updatedSwap.sender_finished && updatedSwap.receiver_finished) {
+                completeTheSwap(updatedSwap.id);
+            }
+        })
+        .subscribe();
 }
 </script>

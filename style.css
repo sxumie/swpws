@@ -1425,6 +1425,25 @@ body.dark .noti-time {
   align-items: center;
   padding: 15px 20px;
 }
+/* Finished Indicatior */
+.finish-indicator {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #10b981;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  white-space: nowrap;
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+  z-index: 5;
+}
+
+.finish-indicator.hidden { display: none; }
+
 
 /* For small screens, allow the timestamp to wrap if needed */
 @media (max-width: 480px) {
