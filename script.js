@@ -545,43 +545,107 @@ function goToSwap(swapId) {
 
 // Add this to your script.js
 async function updateNotificationHover() {
+    const list = document.getElementById('notiHoverList');
     if (!currentUser) return;
-    const listContainer = document.getElementById('notiHoverList');
-    if (!listContainer) return;
 
-    // Fetch pending requests with the created_at timestamp
+    // Fixed query: removed 'email' which was causing issues
     const { data: requests, error } = await _supabase
         .from('swap_requests')
         .select(`
-            created_at,
-            sender_profile:sender_id (full_name, avatar_url)
+            id, is_read, created_at,
+            sender:sender_id (full_name, avatar_url)
         `)
         .eq('receiver_id', currentUser.id)
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false }); // Newest first
+        .order('created_at', { ascending: false })
+        .limit(5);
 
-    if (error || !requests || requests.length === 0) {
-        listContainer.innerHTML = '<p style="padding:20px; text-align:center; font-size:0.8rem; color:gray;">Your inbox is clear! ✨</p>';
+    if (error) {
+        console.error("Fetch error:", error);
         return;
     }
 
-    listContainer.innerHTML = requests.map(req => `
-        <div class="noti-hover-item" style="display: flex; gap: 10px; padding: 10px; border-bottom: 1px solid #eee;">
-            <img src="${req.sender_profile.avatar_url || DEFAULT_AVATAR}" style="width: 35px; height: 35px; border-radius: 50%;">
+    if (!requests || requests.length === 0) {
+        list.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">No new requests</div>';
+        return;
+    }
+
+    list.innerHTML = requests.map(req => `
+        <div class="noti-hover-item ${req.is_read ? '' : 'unread'}" onclick="markAsRead('${req.id}')">
+            <img src="${req.sender.avatar_url || 'images/coco.jpg'}">
             <div class="noti-content">
-                <span style="font-size: 0.85rem; display: block;"><strong>${req.sender_profile.full_name}</strong> sent a request.</span>
-                <span class="noti-time" style="font-size: 0.7rem; color: #999;">🕒 ${getFormattedTime(req.created_at)}</span>
+                <p style="margin:0; font-size:0.9rem;"><strong>${req.sender.full_name}</strong> sent a request.</p>
+                <small style="color:#999;">${getFormattedTime(req.created_at)}</small>
             </div>
         </div>
     `).join('');
 }
 
+async function markAllAsRead() {
+    const { error } = await _supabase
+        .from('swap_requests')
+        .update({ is_read: true })
+        .eq('receiver_id', currentUser.id)
+        .eq('is_read', false);
+
+    if (!error) {
+        updateNotificationHover();
+        checkNewNotifications(); // Updates the red dot
+    }
+}
+
+async function markSingleAsRead(requestId) {
+    await _supabase
+        .from('swap_requests')
+        .update({ is_read: true })
+        .eq('id', requestId);
+    
+    // Optionally redirect to the specific swap or refresh list
+    updateNotificationHover();
+}
+
 // Ensure this runs when the page loads
 const originalCheckNotifications = checkNewNotifications;
-checkNewNotifications = async function() {
-    await originalCheckNotifications(); // Runs your original badge logic
-    updateNotificationHover(); // Runs the new hover logic
-};
+async function checkNewNotifications() {
+    if (!currentUser) return;
+
+    const { count, error } = await _supabase
+        .from('swap_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('receiver_id', currentUser.id)
+        .eq('is_read', false); // ONLY count unread ones
+
+    const redDot = document.getElementById('nav-red-dot');
+    if (redDot) {
+        if (count > 0) {
+            redDot.classList.remove('hidden');
+            redDot.innerText = count > 9 ? '9+' : count;
+        } else {
+            redDot.classList.add('hidden');
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const bellBtn = document.getElementById('notiBellBtn');
+    const dropdown = document.getElementById('notiHoverBox');
+
+    if (bellBtn) {
+        bellBtn.onclick = (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle('active');
+            if (dropdown.classList.contains('active')) {
+                updateNotificationHover();
+            }
+        };
+    }
+    
+    // Close when clicking outside
+    document.onclick = (e) => {
+        if (!dropdown.contains(e.target) && e.target !== bellBtn) {
+            dropdown.classList.remove('active');
+        }
+    };
+});
 
 // Time calculation
 
@@ -605,5 +669,5 @@ function getFormattedTime(dateString) {
     else relative = `${Math.floor(diffInSeconds / 86400)}d ago`;
 
     // Returns: "5m ago • Jan 26, 2:10 PM"
-    return `${relative} • ${exactTime}`;
+    return `<span style="color: var(--primary-color); font-weight:bold;">${relative}</span> • ${exactTime}`;
 }
