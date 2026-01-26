@@ -10,9 +10,15 @@
 <body class="process-body">
     <div class="process-wrapper">
         <header class="process-header">
-            <button onclick="window.location.href='landing.html'" class="back-btn">
-                <span>←</span> Back
-            </button>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="window.location.href='landing.html'" class="back-btn">
+                    <span>←</span> Back
+                </button>
+                <button onclick="window.location.href='history.html'" class="back-btn">
+                    📜 History
+                </button>
+            </div>
+        
             <div class="header-title-group">
                 <h1>Swap Discussion</h1>
                 <div id="status-badge" class="status-tag">Status: In Progress</div>
@@ -103,6 +109,21 @@
                     </button>
                 </div>
             </section>
+            <div id="ratingModal" class="modal hidden">
+                <div class="modal-content">
+                    <h3>Swap Complete! 🎉</h3>
+                    <p>How was your experience with your partner?</p>
+                    <div class="star-rating">
+                        <span onclick="setRating(1)">⭐</span>
+                        <span onclick="setRating(2)">⭐</span>
+                        <span onclick="setRating(3)">⭐</span>
+                        <span onclick="setRating(4)">⭐</span>
+                        <span onclick="setRating(5)">⭐</span>
+                    </div>
+                    <textarea id="ratingComment" placeholder="Write a quick thank you note..."></textarea>
+                    <button class="btn-primary" onclick="submitRating()">Submit & Go Home</button>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -528,11 +549,38 @@
     color: var(--text-muted);
 }
 
+/* Rating UI */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+}
+.star-rating span {
+    font-size: 2rem;
+    cursor: pointer;
+    filter: grayscale(1);
+    transition: 0.2s;
+}
+.star-rating span.active { filter: grayscale(0); transform: scale(1.2); }
+
 /* Mobile Fix */
 @media (max-width: 900px) {
     .process-main-grid { grid-template-columns: 1fr; }
     .process-header { flex-direction: column; align-items: flex-start; }
 }
+
 </style>
 
 <!----------------------------------------------------------------------------------------------------------- -->
@@ -810,5 +858,69 @@ function formatTime(isoString) {
     if (!isoString) return '';
     const date = new Date(isoString);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+//  Both party need to accept logic
+
+async function confirmFinishSwap(swapId, role) {
+    const updateData = {};
+    if (role === 'sender') updateData.sender_finished = true;
+    else updateData.receiver_finished = true;
+
+    // 1. Update confirmation in Supabase
+    const { data, error } = await _supabase
+        .from('swap_requests')
+        .update(updateData)
+        .eq('id', swapId)
+        .select();
+
+    if (error) return console.error(error);
+
+    const swap = data[0];
+
+    // 2. Check if BOTH are now finished
+    if (swap.sender_finished && swap.receiver_finished) {
+        // Complete the swap
+        await _supabase
+            .from('swap_requests')
+            .update({ status: 'completed' })
+            .eq('id', swapId);
+        
+        showRatingPopup(swapId, swap.sender_id === currentUser.id ? swap.receiver_id : swap.sender_id);
+    } else {
+        alert("Waiting for your partner to also click Finish...");
+    }
+}
+
+// Rating logic
+
+let currentRating = 0;
+let activeSwapId = null;
+let partnerId = null;
+
+function setRating(n) {
+    currentRating = n;
+    const stars = document.querySelectorAll('.star-rating span');
+    stars.forEach((s, i) => s.classList.toggle('active', i < n));
+}
+
+async function submitRating() {
+    if (currentRating === 0) return alert("Please select a star rating!");
+
+    const comment = document.getElementById('ratingComment').value;
+
+    const { error } = await _supabase
+        .from('swap_history')
+        .insert({
+            swap_id: activeSwapId,
+            user_id: currentUser.id,
+            partner_id: partnerId,
+            rating: currentRating,
+            comment: comment
+        });
+
+    if (!error) {
+        window.location.href = 'home.html';
+    }
 }
 </script>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swap History | SwapWise</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="nav">
+            <div class="logo" onclick="goHome()">SwapWise</div>
+            <div class="nav-links">
+                <button onclick="goHome()">🏠 Home</button>
+            </div>
+        </div>
+    </header>
+
+    <section class="history-container">
+        <div class="history-header">
+            <h2>Swap History 📜</h2>
+            <div id="averageStats" class="stats-card">
+                </div>
+        </div>
+
+        <div id="historyList" class="history-list">
+            </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+    <script>
+        window.onload = () => {
+            if (!currentUser) {
+                window.location.href = 'index.html';
+                return;
+            }
+            loadSwapHistory();
+        };
+
+        async function loadSwapHistory() {
+    const listContainer = document.getElementById('historyList');
+    const statsContainer = document.getElementById('averageStats');
+    
+    // Fetch ratings received by the current user
+    const { data: history, error } = await _supabase
+        .from('swap_history')
+        .select(`
+            rating,
+            comment,
+            created_at,
+            user_profile:user_id (full_name, avatar_url)
+        `)
+        .eq('partner_id', currentUser.id) // Ratings given TO the current user
+        .order('created_at', { ascending: false });
+
+    if (error) return console.error("History Error:", error);
+
+    // Calculate Average Rating
+    if (history.length > 0) {
+        const avg = history.reduce((acc, curr) => acc + curr.rating, 0) / history.length;
+        statsContainer.innerHTML = `
+            <div class="avg-box">
+                <span class="avg-num">${avg.toFixed(1)}</span>
+                <span class="avg-stars">${'⭐'.repeat(Math.round(avg))}</span>
+                <p>Based on ${history.length} reviews</p>
+            </div>
+        `;
+    } else {
+        statsContainer.innerHTML = "<p>No ratings received yet.</p>";
+    }
+
+    // Render List
+    if (history.length === 0) {
+        listContainer.innerHTML = "<p class='empty-msg'>Completed swaps will appear here.</p>";
+        return;
+    }
+
+    listContainer.innerHTML = history.map(item => `
+        <div class="history-card">
+            <div class="history-user">
+                <img src="${item.user_profile.avatar_url || 'images/default.jpg'}" class="history-avatar">
+                <div>
+                    <strong>${item.user_profile.full_name}</strong>
+                    <span class="history-date">${new Date(item.created_at).toLocaleDateString()}</span>
+                </div>
+            </div>
+            <div class="history-rating">
+                ${'⭐'.repeat(item.rating)}
+            </div>
+            <p class="history-comment">"${item.comment || 'No comment provided.'}"</p>
+        </div>
+    `).join('');
+}
+    </script>
+</body>
+</html>
+
+<style>
+    .history-container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 0 15px;
+}
+
+.stats-card {
+    background: var(--primary-color);
+    color: white;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.avg-num {
+    font-size: 3rem;
+    font-weight: bold;
+    display: block;
+}
+
+.history-card {
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border, #eee);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.history-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.history-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.history-date {
+    display: block;
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.history-rating {
+    margin: 5px 0;
+    font-size: 1.2rem;
+}
+
+.history-comment {
+    font-style: italic;
+    color: #444;
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 8px;
+}
+</style>

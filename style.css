@@ -1385,6 +1385,47 @@ body.dark .noti-time {
   margin-top: 4px;
 }
 
+/* History button */
+/* Ensure all icon buttons in landing match */
+.nav-icon-btn {
+  font-size: 1.2rem;
+  padding: 8px;
+  border-radius: 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.nav-icon-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+
+/* For the dropdown menu items */
+.user-dropdown-box button {
+  width: 100%;
+  text-align: left;
+  padding: 10px 15px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.user-dropdown-box button:hover {
+  background: #f8f9fa;
+  color: #6366f1;
+}
+
+/* Swapping process header layout adjustment */
+.process-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+}
+
 /* For small screens, allow the timestamp to wrap if needed */
 @media (max-width: 480px) {
   .noti-top-row {
