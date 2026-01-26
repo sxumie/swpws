@@ -432,11 +432,18 @@ async function checkNewNotifications() {
         .from('swap_requests')
         .select('*', { count: 'exact', head: true })
         .eq('receiver_id', currentUser.id)
-        .eq('status', 'pending');
+        .eq('is_read', false);
 
-    const notiBtn = document.querySelector('.noti-btn');
-    if (count > 0 && notiBtn) {
-        notiBtn.innerHTML = '🔔<span class="notification-badge"></span>';
+    const redDot = document.getElementById('nav-red-dot');
+    if (!redDot) return;
+
+    if (count > 0) {
+        redDot.classList.remove('hidden');
+        // If the count is double digits (like 12), show "9+" 
+        // to keep the badge from stretching into an oval
+        redDot.innerText = count > 9 ? '9+' : count;
+    } else {
+        redDot.classList.add('hidden');
     }
 }
 
@@ -452,7 +459,6 @@ async function respondToRequest(requestId, newStatus) {
     }
 
     if (newStatus === 'accepted') {
-        // We use 'activeSwapId' to match the Load function in your process page
         localStorage.setItem('activeSwapId', requestId); 
         window.location.href = 'swappingprocess.html';
     } else {
@@ -542,8 +548,39 @@ function goToSwap(swapId) {
 }
 
 // Notification drop down logic
+function initRealtimeNotifications() {
+    if (!currentUser) return;
 
-// Add this to your script.js
+    // Create a channel to listen for changes
+    const notificationChannel = _supabase
+        .channel('realtime_notifications')
+        .on(
+            'postgres_changes', 
+            { 
+                event: 'INSERT', 
+                schema: 'public', 
+                table: 'swap_requests',
+                filter: `receiver_id=eq.${currentUser.id}` 
+            }, 
+            (payload) => {
+                console.log('New notification received!', payload);
+                
+                // 1. Refresh the red badge count
+                checkNewNotifications();
+                
+                // 2. Refresh the hover list data if the menu is already open
+                const dropdown = document.getElementById('notiHoverBox');
+                if (dropdown && dropdown.classList.contains('active')) {
+                    updateNotificationHover();
+                }
+
+                // 3. Optional: Play a subtle notification sound
+                // playNotificationSound();
+            }
+        )
+        .subscribe();
+}
+
 async function updateNotificationHover() {
     const list = document.getElementById('notiHoverList');
     if (!currentUser) return;

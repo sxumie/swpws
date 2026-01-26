@@ -1014,19 +1014,56 @@ body.dark .btn-decline {
 }
 
 .noti-btn {
-  position: relative; /* Essential for the badge to align to the button */
+  position: relative; /* This is the anchor for the badge */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .notification-badge {
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 12px;
-  height: 12px;
-  background-color: #ef4444; /* Bright red */
-  border: 2px solid white;
+  top: -5px;      /* Adjust based on your bell icon size */
+  right: -5px;
+  
+  /* Size and Shape */
+  min-width: 18px; 
+  height: 18px;
+  padding: 2px;   /* Space for double digits like '10' */
   border-radius: 50%;
+  
+  /* Colors */
+  background-color: #ff4b4b; /* Bright professional red */
+  color: white;
+  border: 2px solid var(--card-bg, #fff); /* Prevents blending with the bell */
+  
+  /* Text Centering */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Typography */
+  font-size: 10px;
+  font-weight: bold;
+  font-family: sans-serif;
+  line-height: 1;
+  
+  z-index: 10;
 }
+
+.notification-badge:not(.hidden) {
+  animation: badgePulse 2s infinite;
+}
+@keyframes badgePulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.notification-badge.hidden {
+  display: none;
+}
+
+
 
 .empty-inbox {
   text-align: center;

@@ -216,7 +216,12 @@
   <script>
     window.addEventListener('load', () => {
     const user = JSON.parse(localStorage.getItem('swapwiseUser'));
-    if (!user) return window.location.href = 'index.html';
+    if (user) {
+        // Start the listener
+        initRealtimeNotifications();
+        // Do initial check
+        checkNewNotifications();
+    }
 
     // Wait 100ms to ensure script.js has defined the functions
     setTimeout(() => {
