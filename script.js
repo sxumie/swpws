@@ -54,90 +54,28 @@ function showDashboard() {
     setTimeout(() => updateCarousel(false), 50);
 }
 
-function showAuth(type) {
-    const authSection = document.getElementById('auth');
+function showAuth(mode) {
+    const authOverlay = document.getElementById('auth');
     const loginCard = document.getElementById('loginCard');
     const registerCard = document.getElementById('registerCard');
 
-    if (type === 'close') {
-        authSection.classList.add('hidden');
+    if (mode === 'close') {
+        authOverlay.classList.add('hidden');
         return;
     }
 
-    authSection.classList.remove('hidden');
+    authOverlay.classList.remove('hidden');
 
-    if (type === 'login') {
+    if (mode === 'login') {
         loginCard.classList.remove('hidden');
         registerCard.classList.add('hidden');
-    } else if (type === 'register') {
-        registerCard.classList.remove('hidden');
+    } else if (mode === 'register') {
         loginCard.classList.add('hidden');
+        registerCard.classList.remove('hidden');
     }
 }
 
 // 4. AUTHENTICATION
-async function handleRegister() {
-    const email = document.getElementById('regEmail').value;
-    const password = document.getElementById('regPass').value;
-    const name = document.getElementById('regName').value;
-    const skill = document.getElementById('regSkill').value;
-
-    const { data: authData, error: authError } = await _supabase.auth.signUp({
-        email: email,
-        password: password,
-    });
-
-    if (authError) return alert(authError.message);
-
-    const userId = authData.user?.id;
-    if (!userId) return alert("User ID not generated. Check email confirmation settings.");
-
-    const { error: profileError } = await _supabase
-        .from('profiles')
-        .insert([{ 
-            id: userId, 
-            full_name: name,         
-            teaching_skill: skill    
-        }]);
-
-    if (profileError) alert("Profile Error: " + profileError.message);
-    else {
-        alert("Account created! Please log in.");
-        showAuth('login');
-    }
-}
-
-async function handleLogin() {
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPass').value;
-
-    if(!email || !password) return alert("Please fill in all fields.");
-
-    // 1. Authenticate with Supabase
-    const { data, error } = await _supabase.auth.signInWithPassword({
-        email: email,
-        password: password,
-    });
-
-    if (error) return alert("Login Error: " + error.message);
-
-    // 2. Fetch the user's profile data
-    const { data: profile, error: pError } = await _supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', data.user.id)
-        .single();
-
-    if (profile) {
-        // 3. Store the user data so landing.html can read it
-        localStorage.setItem('swapwiseUser', JSON.stringify(profile));
-        
-        // 4. REDIRECT to the other file
-        window.location.href = 'landing.html'; 
-    } else {
-        alert("Profile not found. Please ensure your account setup is complete.");
-    }
-}
 
 async function logout() {
     if(confirm('Log out?')) {
@@ -301,8 +239,12 @@ function toggleProfileMenu() {
 window.addEventListener('click', function(e) {
     const menu = document.getElementById('profileMenu');
     const trigger = document.querySelector('.user-avatar-trigger');
-    if (!trigger.contains(e.target) && !menu.contains(e.target)) {
-        menu.classList.add('hidden');
+    
+    // Check if BOTH elements exist before running the logic
+    if (menu && trigger) {
+        if (!trigger.contains(e.target) && !menu.contains(e.target)) {
+            menu.classList.add('hidden');
+        }
     }
 });
 
@@ -447,24 +389,6 @@ async function checkNewNotifications() {
     }
 }
 
-async function respondToRequest(requestId, newStatus) {
-    const { error } = await _supabase
-        .from('swap_requests')
-        .update({ status: newStatus })
-        .eq('id', requestId);
-
-    if (error) {
-        alert("Action failed: " + error.message);
-        return;
-    }
-
-    if (newStatus === 'accepted') {
-        localStorage.setItem('activeSwapId', requestId); 
-        window.location.href = 'swappingprocess.html';
-    } else {
-        loadInbox(); // Refresh the list for declined requests
-    }
-}
 
 function goToInbox() { window.location.href = "notification.html"; }
   function goHome() { window.location.href = "landing.html"; }
@@ -678,8 +602,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Close when clicking outside
     document.onclick = (e) => {
-        if (!dropdown.contains(e.target) && e.target !== bellBtn) {
-            dropdown.classList.remove('active');
+        const dropdown = document.getElementById('notiHoverBox');
+        const bellBtn = document.getElementById('notiBellBtn');
+    
+        // ONLY check if elements exist
+        if (dropdown && bellBtn) {
+            if (!dropdown.contains(e.target) && e.target !== bellBtn) {
+                dropdown.classList.remove('active');
+            }
         }
     };
 });
@@ -707,4 +637,155 @@ function getFormattedTime(dateString) {
 
     // Returns: "5m ago • Jan 26, 2:10 PM"
     return `<span style="color: var(--primary-color); font-weight:bold;">${relative}</span> • ${exactTime}`;
+}
+
+// Login and Registration form
+
+// A. Toggle Password Visibility
+function togglePass(inputId) {
+    const input = document.getElementById(inputId);
+    const btn = input.nextElementSibling;
+    if (input.type === 'password') {
+        input.type = 'text';
+        btn.innerHTML = '🙈';
+    } else {
+        input.type = 'password';
+        btn.innerHTML = '👁️';
+    }
+}
+
+// B. Show Auth Error Messages
+function showMessage(elementId, message, isError = true) {
+    const el = document.getElementById(elementId);
+    el.innerText = message;
+    el.classList.remove('hidden');
+    el.style.backgroundColor = isError ? "#ffe0e0" : "#e0ffe0";
+    el.style.color = isError ? "#d8000c" : "#008000";
+}
+
+// C. Handle Registration with Validation
+async function handleRegister() {
+    const email = document.getElementById('regEmail').value;
+    const password = document.getElementById('regPass').value;
+    const confirmPass = document.getElementById('regPassConfirm').value;
+    const name = document.getElementById('regName').value;
+    const skill = document.getElementById('regSkill').value;
+    const errorDiv = document.getElementById('regError');
+
+    // 1. Validation
+    errorDiv.classList.add('hidden');
+    if (!email || !password || !name || !skill) return showMessage('regError', "Fill all fields.");
+    if (password !== confirmPass) return showMessage('regError', "Passwords mismatch.");
+
+    // 2. Start Loading
+    // Use the ID #regBtn so we don't accidentally target the "X" button
+    setBtnLoading('#regBtn', true, 'Sign Up');
+
+    // 3. Auth Sign Up
+    const { data: authData, error: authError } = await _supabase.auth.signUp({
+        email: email,
+        password: password,
+    });
+
+    if (authError) {
+        setBtnLoading('#regBtn', false, 'Sign Up');
+        return showMessage('regError', authError.message);
+    }
+
+    // 4. Create Profile using UPSERT
+    if (authData.user) {
+        const { error: profileError } = await _supabase
+            .from('profiles')
+            .upsert({ 
+                id: authData.user.id, 
+                full_name: name, 
+                teaching_skill: skill 
+            }, { onConflict: 'id' }); // This line prevents the "pkey" error
+
+        setBtnLoading('#regBtn', false, 'Sign Up');
+
+        if (profileError) {
+            showMessage('regError', "Database Error: " + profileError.message);
+        } else {
+            alert("Account created! You can now log in.");
+            showAuth('login');
+        }
+    }
+}
+
+// D. Handle Login with Error Handling
+async function handleLogin() {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPass').value;
+    
+    document.getElementById('loginError').classList.add('hidden');
+
+    if(!email || !password) return showMessage('loginError', "Please fill in all fields.");
+
+    // START LOADING
+    setBtnLoading('#loginCard button', true, 'Log In');
+
+    const { data, error } = await _supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+    });
+
+    if (error) {
+        setBtnLoading('#loginCard button', false, 'x'); // STOP LOADING
+        return showMessage('loginError', "Invalid credentials.");
+    }
+
+    const { data: profile } = await _supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', data.user.id)
+        .single();
+
+    if (profile) {
+        localStorage.setItem('swapwiseUser', JSON.stringify(profile));
+        window.location.href = 'landing.html'; 
+    } else {
+        setBtnLoading('#loginCard button', false, 'Log In'); // STOP LOADING
+        showMessage('loginError', "Profile not found.");
+    }
+}
+
+function setBtnLoading(selector, isLoading, originalText) {
+    const btn = document.querySelector(selector);
+    if (!btn) return;
+    
+    if (isLoading) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span>';
+    } else {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
+
+function setLoading(buttonId, isLoading) {
+    const btn = document.getElementById(buttonId);
+    if (isLoading) {
+        btn.disabled = true;
+        btn.innerHTML = '<div class="spinner"></div>'; // Add a CSS spinner
+    } else {
+        btn.innerHTML = originalText;
+    }
+}
+
+// Helper to handle the loading spinner inside buttons
+function toggleLoading(btnId, isLoading) {
+    const btn = document.getElementById(btnId);
+    const btnTextId = btnId === 'loginBtn' ? 'loginBtnText' : 'regBtnText';
+    const originalText = btnId === 'loginBtn' ? 'Log In' : 'Sign Up';
+    
+    if (isLoading) {
+        // Disable button and show only the spiral spinner
+        btn.disabled = true;
+        btn.innerHTML = '<div class="spinner"></div>';
+    } else {
+        // Re-enable and show original text
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
 }

@@ -366,50 +366,79 @@
 }
 
 .auth-card {
-  background: var(--card-bg);
-  padding: 3rem 2.5rem;
-  border-radius: 1.5rem;
-  box-shadow: var(--shadow-xl);
-  border: 1px solid var(--border);
-  position: relative;
+  position: relative; /* This is the anchor */
+  padding-top: 40px;
+  
+  background: #ffffff;
+  padding: 2.5rem 2rem;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05); /* Softer shadow */
   text-align: center;
 }
 
-/* --- 3. Inputs & Select Styling --- */
 .auth-card h2 {
-  margin-bottom: 2rem;
+  color: #a855f7; /* Your original purple */
   font-size: 2rem;
-  background: var(--gradient-purple);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-align: center;
-  color: var(--text-dark);
   font-weight: 700;
+  margin-bottom: 1.5rem;
 }
 
+.auth-subtitle {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 2rem;
+  display: block;
+}
+
+.auth-card .btn-submit {
+  width: 100%;
+  background: #a855f7;
+  color: white;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: filter 0.2s;
+}
+
+.auth-card .btn-submit:hover {
+  filter: brightness(0.9);
+  
+}
+
+.btn-submit {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 45px; /* Keeps button size consistent when text disappears */
+}
 
 .auth-card input, 
 .auth-card select {
   width: 100%;
-  padding: 14px;
+  padding: 14px 16px;
   margin-bottom: 1rem;
   border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--bg-surface);
-  color: var(--text-dark);
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
   font-size: 1rem;
-  transition: border-color 0.3s;
+  transition: all 0.2s;
 }
 
 .auth-card input:focus {
-  border-color: var(--primary);
   outline: none;
+  border-color: #a855f7;
+  background: #fff;
 }
 
 /* --- 4. Buttons --- */
 .auth-card button {
   padding: 14px;
-  margin-top: 10px;
   background: var(--primary);
   color: white;
   border: none;
@@ -428,13 +457,12 @@
 /* Close button style */
 .close-auth {
   position: absolute;
-
   top: 5px;
   right: 10px;
   background: none;
   border: none;
   font-size: 1.8rem;
-  color: var(--text-muted);
+  color: var(--primary);
   cursor: pointer;
 }
 
@@ -442,13 +470,9 @@
   margin-top: 20px;
   font-size: 0.9rem;
   color: var(--text-muted);
-  cursor: pointer;
 }
 
-.auth-card p:hover {
-  color: var(--primary);
-  text-decoration: underline;
-}
+
 
 /* Ensure hidden works */
 #auth.hidden, .auth-card.hidden {
@@ -816,7 +840,7 @@
     footer {
       text-align: center;
       padding: 3rem 1.5rem;
-      color: var(--text-muted);
+      color: var(--primary);
       font-size: 0.875rem;
       border-top: 1px solid var(--border);
     }
@@ -1454,6 +1478,125 @@ body.dark .noti-time {
   .noti-timestamp {
       margin-top: 4px;
   }
+}
+
+/* Show password and error message */
+
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center; /* Vertically centers the eye with the input text */
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 45px !important; /* Prevents text from going under the eye */
+  margin-bottom: 0 !important;    /* Wrapper handles the spacing instead */
+}
+
+.password-container {
+  position: relative;
+  width: 100%;
+}
+
+.password-container input {
+  width: 100%;
+  padding-right: 40px; /* Space for the eye icon */
+}
+
+.toggle-password {
+  position: absolute;
+  right: 0;
+  background: none !important;
+  border: none !important;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%; /* Spans full height of parent to stay centered */
+  padding: 0;
+  color: #64748b;
+  font-size: 1.2rem;
+  z-index: 10;
+}
+
+.toggle-password:hover {
+  opacity: 1;
+}
+
+.purple-link {
+  color: #a855f7;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.purple-link :hover {
+  color: var(--primary);
+  text-decoration: underline;
+} 
+
+.auth-error {
+  background: #fee2e2;
+  color: #b41111;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #fca5a5;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  width: 100%;
+}
+
+.hidden { display: none; }
+
+/* Loading Spinner Animation */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgb(255, 255, 255); /* Faded circle */
+  border-top: 3px solid #ffffff; /* Solid white line that "spins" */
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin-spiral 1s linear infinite;
+}
+
+@keyframes spin-spiral {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.loading-text-hidden {
+  display: none;
+}
+
+/* Style for disabled buttons during loading */
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+
+/* --- Internal Close Button --- */
+.close-auth-internal {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 30px;
+  height: 30px;
+  background: #7c3aed !important;
+  border-radius: 50% !important;
+  border: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #64748b;
+  font-size: 22px;
+  z-index: 10;
+}
+
+.close-auth-internal:hover {
+  background: #e2e8f0 !important;
 }
 
 @media (min-width: 768px) {

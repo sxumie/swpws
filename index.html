@@ -100,30 +100,59 @@
   <section id="auth" class="hidden">
     <div class="auth-wrapper">
       <div id="loginCard" class="auth-card">
-        <button class="close-auth" onclick="showAuth('close')">&times;</button>
+        <button type="button" class="close-auth-internal" onclick="showAuth('close')">&times;</button>
+        
         <h2>Login</h2>
+        
+        
+    
         <input type="email" id="loginEmail" placeholder="Email Address" />
-        <input type="password" id="loginPass" placeholder="Password" />
-        <button onclick="handleLogin()">Log In</button>
-        <p onclick="showAuth('register')">New here? Create an account</p>
-      </div>
+    
+        <div class="password-wrapper">
+            <input type="password" id="loginPass" placeholder="Password" />
+            <button type="button" class="toggle-password" onclick="togglePass('loginPass')">
+                👁️
+            </button>
+        </div>
+        <div id="loginError" class="auth-error hidden"></div>
+        <button class="btn-submit" id="loginBtn" onclick="handleLogin()">
+          Login
+        </button>
+        
+        <p >New here? <span class="purple-link" onclick="showAuth('register')">Create an account</span></p>
+    </div>
+          
+    <div id="registerCard" class="auth-card hidden">
+      <button class="close-auth-internal" onclick="showAuth('close')">&times;</button>
+      <h2>Create Account</h2>
+  
+      <input type="text" id="regName" placeholder="Full Name">
+      <input type="email" id="regEmail" placeholder="Email Address">
       
-      <div id="registerCard" class="auth-card hidden">
-        <button class="close-auth" onclick="showAuth('close')">&times;</button>
-        <h2>Create Account</h2>
-        <input type="text" id="regName" placeholder="Full Name" />
-        <input type="email" id="regEmail" placeholder="Email Address" />
-        <select id="regSkill">
-          <option value="">Skill you can teach</option>
-          <option>Coding</option>
-          <option>Math</option>
-          <option>Languages</option>
-          <option>Design</option>
-        </select>
-        <input type="password" id="regPass" placeholder="Password" />
-        <button onclick="handleRegister()">Sign Up</button>
-        <p onclick="showAuth('login')">Already have an account?</p>
+      <select id="regSkill">
+          <option value="Design">Design</option>
+          <option value="Programming">Programming</option>
+          <option value="Calculus">Calculus</option>
+          <option value="Physics">Physics</option>
+          <option value="Language">Language</option>
+      </select>
+  
+      <div class="password-wrapper">
+          <input type="password" id="regPass" placeholder="Password">
+          <button type="button" class="toggle-password" onclick="togglePass('regPass')">👁️</button>
       </div>
+  
+      <div class="password-wrapper">
+          <input type="password" id="regPassConfirm" placeholder="Repeat Password">
+          <button type="button" class="toggle-password" onclick="togglePass('regPassConfirm')">👁️</button>
+      </div>
+  
+      <div id="regError" class="auth-error hidden"></div>
+  
+      <button class="btn-submit" id="regBtn" onclick="handleRegister()">Sign Up</button>
+      
+      <p>Already have an account? <span class="purple-link" onclick="showAuth('login')">Login</span></p>
+  </div>
     </div>
 </section>
 
